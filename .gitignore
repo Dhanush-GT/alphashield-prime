@@ -1,5 +1,17 @@
+# Environment credentials
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Python virtual environment & cache
 .venv/
+venv/
 __pycache__/
 *.pyc
 *.pyo
+*.pyd
+
+# Operating system
 .DS_Store
+Thumbs.db
