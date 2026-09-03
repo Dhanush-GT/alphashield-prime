@@ -38,16 +38,17 @@ AlphaShield AI resolves this dilemma through a strict **separation of intelligen
                                            │ [Approved Sizing & Contract]
                                            ▼
                ┌────────────────────────────────────────────────────────┐
-               │         Layer 3: Execution Broker (Alpaca API)         │
-               │              Alpaca Paper Trading API v2               │
+               │           Layer 3: Execution Broker (Alpaca CLI)       │
+               │             Alpaca CLI Subprocess Wrapper              │
                │   • Active Option Contract Search (OTM / Nearest DTE)  │
-               │   • Bracket & Market Order Dispatch                    │
+               │   • Bracket & Market Order Dispatch via CLI            │
+               │   • 15-Minute Market-Hours Cron Scheduler Loop         │
                └────────────────────────────────────────────────────────┘
 ```
 
 1. **Cognitive Brain (Featherless AI):** Synthesizes technical momentum (15-min SPY RSI-14 and MACD histogram trends) into structured directional theses using open-source serverless inference (`zai-org/GLM-5.2`).
 2. **Deterministic Risk Governor (Python):** An independent algorithmic veto layer that evaluates the AI's proposal against hard mathematical risk constraints before any order can touch the broker.
-3. **Execution Broker (Alpaca API / CLI):** Direct options contract resolution, submission, and state tracking via Alpaca Paper Trading.
+3. **Execution Broker (Alpaca CLI Subprocess):** Direct options contract resolution, submission, bracket execution (SL/TP), and state tracking via Alpaca CLI subprocess commands (`alpaca account get`, `alpaca data bars`, `alpaca option contracts`, `alpaca order submit`).
 
 ---
 

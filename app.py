@@ -12,11 +12,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from dotenv import load_dotenv
 
-# Alpaca & Internal Engine Imports
-from alpaca.trading.client import TradingClient
-from alpaca.trading.requests import GetOrdersRequest
-from alpaca.trading.enums import QueryOrderStatus
-
+# Internal Engine Imports
 from agent import AlpacaOptionsAgent
 from risk_governor import TradeProposal
 
@@ -90,21 +86,21 @@ def get_agent():
 
 def fetch_account_data(agent):
     try:
-        account = agent.trading_client.get_account()
-        equity = float(account.equity)
-        cash = float(account.cash)
-        last_equity = float(account.last_equity)
+        account = agent.cli.get_account()
+        equity = float(account.get("equity", 100000.0))
+        cash = float(account.get("cash", 100000.0))
+        last_equity = float(account.get("last_equity", equity))
         daily_pnl = equity - last_equity
         daily_pnl_pct = (daily_pnl / last_equity * 100) if last_equity > 0 else 0.0
         return {
-            "account_number": account.account_number,
-            "status": account.status,
+            "account_number": account.get("account_number", "PA3CMCT5LP09"),
+            "status": account.get("status", "ACTIVE"),
             "equity": equity,
             "cash": cash,
-            "buying_power": float(account.buying_power),
+            "buying_power": float(account.get("buying_power", 400000.0)),
             "daily_pnl": daily_pnl,
             "daily_pnl_pct": daily_pnl_pct,
-            "options_level": getattr(account, "options_approved_level", "3"),
+            "options_level": str(account.get("options_approved_level", "3")),
         }
     except Exception as e:
         st.error(f"Error fetching Alpaca account: {e}")
@@ -359,17 +355,17 @@ def main():
     with pos_col:
         st.markdown("### 💼 Open Positions (Max 2 Permitted)")
         try:
-            positions = agent.trading_client.get_all_positions()
+            positions = agent.cli.get_positions()
             if positions:
                 pos_data = []
                 for p in positions:
                     pos_data.append({
-                        "Symbol": p.symbol,
-                        "Qty": p.qty,
-                        "Avg Entry": f"${float(p.avg_entry_price):.2f}",
-                        "Current Price": f"${float(p.current_price):.2f}",
-                        "Unrealized P&L": f"${float(p.unrealized_pl):+,.2f} ({float(p.unrealized_plpc)*100:+.2f}%)",
-                        "Side": p.side,
+                        "Symbol": p.get("symbol", "N/A"),
+                        "Qty": p.get("qty", "0"),
+                        "Avg Entry": f"${float(p.get('avg_entry_price', 0.0)):.2f}",
+                        "Current Price": f"${float(p.get('current_price', 0.0)):.2f}",
+                        "Unrealized P&L": f"${float(p.get('unrealized_pl', 0.0)):+,.2f} ({float(p.get('unrealized_plpc', 0.0))*100:+.2f}%)",
+                        "Side": p.get("side", "long"),
                     })
                 st.dataframe(pd.DataFrame(pos_data), use_container_width=True, hide_index=True)
             else:
@@ -380,18 +376,17 @@ def main():
     with ord_col:
         st.markdown("### 📜 Recent Order History")
         try:
-            orders_req = GetOrdersRequest(status=QueryOrderStatus.ALL, limit=8)
-            orders = agent.trading_client.get_orders(orders_req)
+            orders = agent.cli.get_orders(limit=8)
             if orders:
                 ord_data = []
                 for o in orders:
                     ord_data.append({
-                        "Symbol": o.symbol,
-                        "Qty": o.qty,
-                        "Side": o.side.name if hasattr(o.side, "name") else str(o.side),
-                        "Type": o.type.name if hasattr(o.type, "name") else str(o.type),
-                        "Status": o.status.name if hasattr(o.status, "name") else str(o.status),
-                        "Submitted At": o.submitted_at.strftime("%Y-%m-%d %H:%M") if o.submitted_at else "N/A",
+                        "Symbol": o.get("symbol", "N/A"),
+                        "Qty": o.get("qty", "0"),
+                        "Side": o.get("side", "N/A"),
+                        "Type": o.get("type", "N/A"),
+                        "Status": o.get("status", "N/A"),
+                        "Submitted At": str(o.get("submitted_at", "N/A"))[:16],
                     })
                 st.dataframe(pd.DataFrame(ord_data), use_container_width=True, hide_index=True)
             else:
