@@ -168,10 +168,11 @@ class AlpacaOptionsAgent:
         return pd.DataFrame(records)
 
     def find_nearest_option_contract(
-        self, action: str, current_price: float
+        self, action: str, current_price: float, target_symbol: Optional[str] = None
     ) -> Optional[Dict[str, Any]]:
         """
-        Queries Alpaca CLI for active SPY option contracts matching the directional thesis.
+        Queries Alpaca CLI for active SPY option contracts matching the directional thesis,
+        honoring target_symbol if specified and active.
         """
         logger.info(f"🔎 Searching for suitable active SPY option contract for {action} via CLI...")
         is_call = (action == "BUY_CALL")
@@ -182,6 +183,22 @@ class AlpacaOptionsAgent:
         contracts = data.get("option_contracts", [])
 
         if contracts and isinstance(contracts, list):
+            # If target_symbol was specified by AI, search for exact match
+            if target_symbol:
+                exact = [c for c in contracts if c.get("symbol") == target_symbol and str(c.get("status", "")).lower() == "active"]
+                if exact:
+                    best = exact[0]
+                    strike = float(best.get("strike_price", current_price))
+                    expiry = str(best.get("expiration_date", str(now + timedelta(days=3))))
+                    logger.info(f"🎯 Matched Target Contract: Symbol={target_symbol} | Type={target_type} | Strike=${strike:.2f} | Exp={expiry}")
+                    return {
+                        "symbol": target_symbol,
+                        "strike_price": strike,
+                        "expiration_date": expiry,
+                        "type": target_type,
+                        "estimated_premium": 2.50,
+                    }
+
             # Filter by matching type (call/put)
             matching = [
                 c for c in contracts
@@ -213,13 +230,18 @@ class AlpacaOptionsAgent:
 
         # Fallback contract symbol generation
         mock_strike = round(current_price)
-        mock_expiry = (now + timedelta(days=3)).strftime("%y%m%d")
-        mock_symbol = f"SPY{mock_expiry}{'C' if is_call else 'P'}{int(mock_strike*1000):08d}"
+        target_exp = now + timedelta(days=3)
+        if target_exp.weekday() == 5:
+            target_exp = target_exp - timedelta(days=1)
+        elif target_exp.weekday() == 6:
+            target_exp = target_exp + timedelta(days=1)
+        mock_expiry = target_exp.strftime("%y%m%d")
+        mock_symbol = target_symbol or f"SPY{mock_expiry}{'C' if is_call else 'P'}{int(mock_strike*1000):08d}"
         logger.info(f"🎯 Target Contract Resolved: {mock_symbol} (${mock_strike:.2f} Strike)")
         return {
             "symbol": mock_symbol,
             "strike_price": mock_strike,
-            "expiration_date": str(now + timedelta(days=3)),
+            "expiration_date": target_exp.strftime("%Y-%m-%d"),
             "type": target_type,
             "estimated_premium": 2.50,
         }
@@ -227,7 +249,7 @@ class AlpacaOptionsAgent:
     def execute_cycle(self, dry_run: bool = False) -> Dict[str, Any]:
         """
         Executes one full autonomous trading cycle via Alpaca CLI Subprocess:
-        Market Ingestion -> AI Inference -> Risk Governor Veto Gate -> CLI Order & Bracket Dispatch.
+        Market Ingestion -> Option Candidates Query -> AI Inference -> Risk Governor Veto Gate -> CLI Order & Bracket Dispatch.
         """
         logger.info("\n" + "=" * 65)
         logger.info(f"🚀 STARTING AGENT CYCLE (Mode: {'DRY RUN' if dry_run else 'LIVE PAPER EXECUTION'})")
@@ -248,16 +270,28 @@ class AlpacaOptionsAgent:
             f"MACD Hist={market_metrics['macd_hist']:+.3f} | 15m Change={market_metrics['15m_pct_change']:+.2f}%"
         )
 
-        # 3. AI Brain Decision
-        ai_output = self.brain.analyze_market_momentum(market_metrics)
+        # 3. Query Option Candidates from Alpaca CLI
+        raw_options = self.cli.get_option_contracts(underlying_symbol="SPY")
+        candidate_contracts = raw_options.get("option_contracts", [])
+        if not candidate_contracts:
+            candidate_contracts = self.brain.generate_candidate_options(current_price=current_spy_price)
+
+        # 4. AI Brain Decision (Featherless AI targeting SPY options)
+        ai_output = self.brain.analyze_market_momentum(
+            market_data=market_metrics,
+            candidate_contracts=candidate_contracts,
+        )
+        council_debate = self.brain.get_council_debate(market_metrics, ai_output)
+
         proposal = TradeProposal(
             action=ai_output["action"],
             underlying="SPY",
             rationale=ai_output["rationale"],
             confidence=ai_output["confidence"],
+            contract_symbol=ai_output.get("contract_symbol"),
         )
 
-        # 4. Deterministic Risk Governor Evaluation (Pre-Check)
+        # 5. Deterministic Risk Governor Evaluation (Pre-Check)
         pre_verdict = self.governor.evaluate(
             proposal=proposal,
             portfolio_equity=portfolio_equity,
@@ -270,20 +304,29 @@ class AlpacaOptionsAgent:
                 "status": "HALTED",
                 "proposal": proposal.__dict__,
                 "verdict": pre_verdict.__dict__,
+                "council_debate": council_debate,
+                "market_metrics": market_metrics,
             }
 
-        # 5. Contract Resolution via CLI
+        # 6. Contract Resolution via CLI
         contract_info = self.find_nearest_option_contract(
             action=proposal.action,
             current_price=current_spy_price,
+            target_symbol=proposal.contract_symbol,
         )
 
         if not contract_info:
             logger.error("❌ Could not find suitable option contract. Halting cycle.")
-            return {"status": "NO_CONTRACT_FOUND", "proposal": proposal.__dict__}
+            return {
+                "status": "NO_CONTRACT_FOUND",
+                "proposal": proposal.__dict__,
+                "verdict": pre_verdict.__dict__,
+                "council_debate": council_debate,
+                "market_metrics": market_metrics,
+            }
 
-        contract_symbol = contract_info["symbol"]
-        premium = contract_info["estimated_premium"]
+        contract_symbol = proposal.contract_symbol or contract_info["symbol"]
+        premium = contract_info.get("estimated_premium", 2.50)
 
         # Final Risk Sizing Evaluation with exact premium
         final_verdict = self.governor.evaluate(
@@ -299,6 +342,8 @@ class AlpacaOptionsAgent:
                 "status": "HALTED_ON_SIZING",
                 "contract": contract_info,
                 "verdict": final_verdict.__dict__,
+                "council_debate": council_debate,
+                "market_metrics": market_metrics,
             }
 
         exit_targets = self.governor.calculate_exit_targets(entry_price=premium)
@@ -316,49 +361,69 @@ class AlpacaOptionsAgent:
                 "verdict": final_verdict.__dict__,
                 "contract": contract_info,
                 "exit_targets": exit_targets,
+                "council_debate": council_debate,
+                "market_metrics": market_metrics,
             }
 
-        # 6. Execute Order via Alpaca CLI Subprocess
+        # 7. Execute Order via Alpaca CLI Subprocess (with Bracket / OCO attachment)
         try:
-            logger.info(f"⚡ Submitting Market Order via Alpaca CLI: {final_verdict.max_contracts}x {contract_symbol}...")
-            main_order = self.cli.submit_order(
-                symbol=contract_symbol,
-                qty=final_verdict.max_contracts,
-                side="buy",
-                order_type="market",
-                time_in_force="day",
-            )
-            order_id = main_order.get("id", "SIMULATED_ORDER_ID")
-            order_status = main_order.get("status", "submitted")
-            logger.info(f"✅ Main Order Submitted via CLI! Order ID: {order_id} | Status: {order_status}")
+            logger.info(f"⚡ Submitting Protective Bracket Order via Alpaca CLI: {final_verdict.max_contracts}x {contract_symbol}...")
+            main_order = None
+            bracket_order = None
+            oco_order = None
 
-            # 7. Submit Immediate Protective Stop-Loss & Take-Profit Bracket Orders via CLI
-            sl_order = None
-            tp_order = None
             try:
-                logger.info(f"🛡️ Submitting Protective Stop-Loss Order (-20% @ ${exit_targets['stop_loss_price']:.2f})...")
-                sl_order = self.cli.submit_stop_loss_order(
+                # Attempt direct bracket order execution via CLI
+                main_order = self.cli.submit_bracket_order(
                     symbol=contract_symbol,
                     qty=final_verdict.max_contracts,
-                    stop_price=exit_targets["stop_loss_price"],
+                    side="buy",
+                    order_type="market",
+                    take_profit_price=exit_targets["take_profit_price"],
+                    stop_loss_price=exit_targets["stop_loss_price"],
                 )
-                logger.info(f"🎯 Submitting Take-Profit Target Order (+40% @ ${exit_targets['take_profit_price']:.2f})...")
-                tp_order = self.cli.submit_take_profit_order(
-                    symbol=contract_symbol,
-                    qty=final_verdict.max_contracts,
-                    limit_price=exit_targets["take_profit_price"],
-                )
+                order_id = main_order.get("id", "SIMULATED_ORDER_ID")
+                order_status = main_order.get("status", "submitted")
+                logger.info(f"✅ Protective Bracket Order Submitted via CLI! Order ID: {order_id} | Status: {order_status}")
             except Exception as bracket_err:
-                logger.warning(f"⚠️ Bracket order attachment note: {bracket_err}")
+                logger.warning(f"⚠️ Direct bracket order failed ({bracket_err}); falling back to multi-leg submission.")
+                main_order = self.cli.submit_order(
+                    symbol=contract_symbol,
+                    qty=final_verdict.max_contracts,
+                    side="buy",
+                    order_type="market",
+                    time_in_force="day",
+                )
+                # Attach OCO or protective Stop-Loss & Take-Profit
+                try:
+                    oco_order = self.cli.submit_oco_order(
+                        symbol=contract_symbol,
+                        qty=final_verdict.max_contracts,
+                        take_profit_price=exit_targets["take_profit_price"],
+                        stop_loss_price=exit_targets["stop_loss_price"],
+                    )
+                except Exception as oco_err:
+                    logger.warning(f"⚠️ OCO attachment note: {oco_err}. Attaching individual protective legs.")
+                    sl_order = self.cli.submit_stop_loss_order(
+                        symbol=contract_symbol,
+                        qty=final_verdict.max_contracts,
+                        stop_price=exit_targets["stop_loss_price"],
+                    )
+                    tp_order = self.cli.submit_take_profit_order(
+                        symbol=contract_symbol,
+                        qty=final_verdict.max_contracts,
+                        limit_price=exit_targets["take_profit_price"],
+                    )
 
             return {
                 "status": "ORDER_SUBMITTED",
                 "main_order": main_order,
-                "stop_loss_order": sl_order,
-                "take_profit_order": tp_order,
+                "oco_order": oco_order,
                 "contract": contract_symbol,
                 "quantity": final_verdict.max_contracts,
                 "exit_targets": exit_targets,
+                "council_debate": council_debate,
+                "market_metrics": market_metrics,
             }
         except Exception as order_err:
             logger.error(f"❌ CLI order submission failed: {order_err}")
@@ -366,6 +431,8 @@ class AlpacaOptionsAgent:
                 "status": "ORDER_FAILED",
                 "error": str(order_err),
                 "contract": contract_symbol,
+                "council_debate": council_debate,
+                "market_metrics": market_metrics,
             }
 
     def start_cron_scheduler(self, interval_minutes: int = 15, dry_run: bool = False):
@@ -378,8 +445,18 @@ class AlpacaOptionsAgent:
         logger.info("=" * 65)
 
         def scheduled_job():
-            logger.info(f"⏰ [CRON TRIGGER] Executing scheduled 15-minute trading cycle at {datetime.now(timezone.utc)}...")
-            self.execute_cycle(dry_run=dry_run)
+            now_utc = datetime.now(timezone.utc)
+            clock = self.cli.get_clock()
+            is_open = clock.get("is_open", False)
+            logger.info(f"⏰ [CRON TRIGGER] Market open status: {is_open} at {now_utc.isoformat()}")
+
+            if not is_open and not dry_run:
+                next_open = clock.get("next_open", "N/A")
+                logger.info(f"⏸️ [CRON] Market is currently CLOSED. Skipping live order execution. Next open: {next_open}")
+                return
+
+            result = self.execute_cycle(dry_run=dry_run)
+            logger.info(f"⏰ [CRON CYCLE RESULT] Status: {result.get('status')}")
 
         # Run immediately once on start
         scheduled_job()

@@ -170,6 +170,9 @@ class AlpacaCLI:
                 time_in_force = "day"
                 limit_price = None
                 stop_price = None
+                order_class = None
+                tp_limit_price = None
+                sl_stop_price = None
 
                 for i, arg in enumerate(args):
                     if arg in ("--symbol", "-s") and i + 1 < len(args):
@@ -186,6 +189,12 @@ class AlpacaCLI:
                         limit_price = str(args[i + 1])
                     elif arg in ("--stop-price",) and i + 1 < len(args):
                         stop_price = str(args[i + 1])
+                    elif arg in ("--order-class",) and i + 1 < len(args):
+                        order_class = args[i + 1].lower()
+                    elif arg in ("--take-profit-limit-price",) and i + 1 < len(args):
+                        tp_limit_price = str(args[i + 1])
+                    elif arg in ("--stop-loss-stop-price",) and i + 1 < len(args):
+                        sl_stop_price = str(args[i + 1])
 
                 payload = {
                     "symbol": symbol,
@@ -198,6 +207,12 @@ class AlpacaCLI:
                     payload["limit_price"] = limit_price
                 if stop_price:
                     payload["stop_price"] = stop_price
+                if order_class:
+                    payload["order_class"] = order_class
+                if tp_limit_price:
+                    payload["take_profit"] = {"limit_price": tp_limit_price}
+                if sl_stop_price:
+                    payload["stop_loss"] = {"stop_price": sl_stop_price}
 
                 url = f"{self.base_url}/v2/orders"
                 res = requests.post(url, headers=headers, json=payload, timeout=10)
@@ -275,6 +290,55 @@ class AlpacaCLI:
             "--time-in-force", time_in_force,
         ])
 
+    def submit_bracket_order(
+        self,
+        symbol: str,
+        qty: int,
+        side: str = "buy",
+        order_type: str = "market",
+        take_profit_price: float = 0.0,
+        stop_loss_price: float = 0.0,
+        time_in_force: str = "day",
+    ) -> Dict[str, Any]:
+        """
+        Calls: alpaca order submit with native bracket order class attaching SL/TP.
+        """
+        return self.run_cli_command([
+            "order", "submit",
+            "--symbol", symbol,
+            "--side", side,
+            "--qty", str(qty),
+            "--type", order_type,
+            "--time-in-force", time_in_force,
+            "--order-class", "bracket",
+            "--take-profit-limit-price", f"{take_profit_price:.2f}",
+            "--stop-loss-stop-price", f"{stop_loss_price:.2f}",
+        ])
+
+    def submit_oco_order(
+        self,
+        symbol: str,
+        qty: int,
+        take_profit_price: float,
+        stop_loss_price: float,
+        side: str = "sell",
+        time_in_force: str = "day",
+    ) -> Dict[str, Any]:
+        """
+        Calls: alpaca order submit with One-Cancels-Other (OCO) bracket exit orders.
+        """
+        return self.run_cli_command([
+            "order", "submit",
+            "--symbol", symbol,
+            "--side", side,
+            "--qty", str(qty),
+            "--type", "limit",
+            "--time-in-force", time_in_force,
+            "--order-class", "oco",
+            "--take-profit-limit-price", f"{take_profit_price:.2f}",
+            "--stop-loss-stop-price", f"{stop_loss_price:.2f}",
+        ])
+
     def submit_stop_loss_order(
         self,
         symbol: str,
@@ -290,7 +354,7 @@ class AlpacaCLI:
             "--qty", str(qty),
             "--type", "stop",
             "--stop-price", f"{stop_price:.2f}",
-            "--time-in-force", "gtc",
+            "--time-in-force", "day",
         ])
 
     def submit_take_profit_order(
@@ -308,5 +372,5 @@ class AlpacaCLI:
             "--qty", str(qty),
             "--type", "limit",
             "--limit-price", f"{limit_price:.2f}",
-            "--time-in-force", "gtc",
+            "--time-in-force", "day",
         ])

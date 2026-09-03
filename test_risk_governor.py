@@ -22,6 +22,7 @@ class TestRiskGovernor(unittest.TestCase):
             underlying="SPY",
             rationale="Strong bullish breakout on RSI & MACD",
             confidence=0.75,
+            contract_symbol="SPY260904C00545000",
         )
         verdict = self.governor.evaluate(
             proposal=proposal,
@@ -41,6 +42,7 @@ class TestRiskGovernor(unittest.TestCase):
             underlying="SPY",
             rationale="Bearish breakdown below 9 EMA",
             confidence=0.70,
+            contract_symbol="SPY260904P00545000",
         )
         verdict = self.governor.evaluate(
             proposal=proposal,
@@ -113,11 +115,82 @@ class TestRiskGovernor(unittest.TestCase):
         self.assertFalse(verdict.approved)
         self.assertTrue(any("concurrent" in r.lower() for r in verdict.veto_reasons))
 
+    def test_handle_hold_action(self):
+        proposal = TradeProposal(
+            action="HOLD",
+            underlying="SPY",
+            rationale="No high-probability setup",
+            confidence=0.40,
+        )
+        verdict = self.governor.evaluate(
+            proposal=proposal,
+            portfolio_equity=self.portfolio_equity,
+            current_positions=[],
+        )
+        self.assertFalse(verdict.approved)
+        self.assertEqual(verdict.action, "HOLD")
+        self.assertEqual(verdict.max_contracts, 0)
+
+    def test_hard_capital_ceiling_enforcement(self):
+        # On a $500k portfolio, 5% is $25k, but hard ceiling is $5,000
+        proposal = TradeProposal(
+            action="BUY_CALL",
+            underlying="SPY",
+            rationale="High conviction",
+            confidence=0.90,
+        )
+        verdict = self.governor.evaluate(
+            proposal=proposal,
+            portfolio_equity=500000.0,
+            current_positions=[],
+            contract_premium=5.00,  # $500 per contract
+        )
+        self.assertTrue(verdict.approved)
+        # Exactly 10 contracts ($5,000), not 50 ($25,000)
+        self.assertEqual(verdict.max_contracts, 10)
+        self.assertEqual(verdict.allocated_capital, 5000.0)
+
+    def test_single_contract_cost_exceeding_ceiling(self):
+        proposal = TradeProposal(
+            action="BUY_CALL",
+            underlying="SPY",
+            rationale="High premium ITM call",
+            confidence=0.80,
+        )
+        # Premium $60.00 -> $6,000 per contract > $5,000 cap
+        verdict = self.governor.evaluate(
+            proposal=proposal,
+            portfolio_equity=self.portfolio_equity,
+            current_positions=[],
+            contract_premium=60.00,
+        )
+        self.assertFalse(verdict.approved)
+        self.assertTrue(any("exceeds maximum allowed trade allocation" in r for r in verdict.veto_reasons))
+
     def test_exit_targets_calculation(self):
         targets = self.governor.calculate_exit_targets(entry_price=10.00)
         self.assertEqual(targets["entry_price"], 10.00)
         self.assertEqual(targets["stop_loss_price"], 8.00)   # -20%
         self.assertEqual(targets["take_profit_price"], 14.00) # +40%
+        self.assertEqual(targets["stop_loss_pct"], 0.20)
+        self.assertEqual(targets["take_profit_pct"], 0.40)
+
+
+    def test_veto_zero_or_negative_equity(self):
+        proposal = TradeProposal(
+            action="BUY_CALL",
+            underlying="SPY",
+            rationale="High conviction with bankrupt account",
+            confidence=0.90,
+        )
+        verdict = self.governor.evaluate(
+            proposal=proposal,
+            portfolio_equity=0.0,
+            current_positions=[],
+            contract_premium=2.00,
+        )
+        self.assertFalse(verdict.approved)
+        self.assertTrue(any("insufficient portfolio equity" in r.lower() for r in verdict.veto_reasons))
 
 
 if __name__ == "__main__":

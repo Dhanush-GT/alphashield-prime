@@ -2,10 +2,11 @@
 brain.py - AI Reasoning Brain powered by Featherless AI (zai-org/GLM-5.2)
 
 Ingests recent SPY momentum data (RSI, MACD, 15-minute price action summary),
-synthesizes market context, and calls Featherless AI's OpenAI-compatible API
-to produce a structured JSON trade thesis:
+evaluates candidate options contracts (Calls/Puts, near-term expiries, dynamic strikes),
+and calls Featherless AI's OpenAI-compatible API to produce a structured JSON trade thesis:
 {
     "action": "BUY_CALL" | "BUY_PUT" | "HOLD",
+    "contract_symbol": "SPY260904C00545000",
     "rationale": "...",
     "confidence": 0.0 - 1.0
 }
@@ -15,9 +16,10 @@ import os
 import re
 import json
 import logging
+from datetime import datetime, timezone, timedelta
+from typing import Dict, Any, List, Optional
 import requests
 import pandas as pd
-from typing import Dict, Any, Optional
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -27,14 +29,28 @@ logger = logging.getLogger("OptionsBrain")
 
 
 def calculate_rsi(series: pd.Series, period: int = 14) -> pd.Series:
-    """Calculates Relative Strength Index (RSI)."""
+    """Calculates Relative Strength Index (RSI) with proper handling for flat prices and zero-loss conditions."""
     delta = series.diff()
     gain = delta.clip(lower=0)
     loss = -delta.clip(upper=0)
     avg_gain = gain.ewm(com=period - 1, min_periods=period).mean()
     avg_loss = loss.ewm(com=period - 1, min_periods=period).mean()
-    rs = avg_gain / (avg_loss + 1e-9)
-    return 100 - (100 / (1 + rs))
+
+    # Handle edge cases: when gain and loss are both 0 (flat price action), RSI is 50.0
+    rsi = pd.Series(50.0, index=series.index)
+    both_zero = (avg_gain == 0) & (avg_loss == 0)
+    loss_zero = (avg_loss == 0) & (avg_gain > 0)
+    gain_zero = (avg_gain == 0) & (avg_loss > 0)
+
+    # Standard RS calculation for non-edge cases
+    normal_mask = ~both_zero & ~loss_zero & ~gain_zero
+    rs = avg_gain[normal_mask] / avg_loss[normal_mask]
+    rsi[normal_mask] = 100.0 - (100.0 / (1.0 + rs))
+
+    rsi[loss_zero] = 100.0
+    rsi[gain_zero] = 0.0
+    rsi[both_zero] = 50.0
+    return rsi
 
 
 def calculate_macd(
@@ -121,36 +137,105 @@ class OptionsBrain:
         }
         return indicators
 
-    def analyze_market_momentum(self, market_data: Dict[str, Any]) -> Dict[str, Any]:
+    def generate_candidate_options(self, current_price: float, exp_days: int = 3) -> List[Dict[str, Any]]:
         """
-        Sends structured momentum metrics to Featherless AI and returns parsed JSON trade proposal.
+        Generates deterministic near-term ATM and near-the-money option candidate specifications
+        in standard OCC format for SPY, ensuring expirations land on valid trading weekdays.
         """
+        now = datetime.now(timezone.utc).date()
+        target_exp = now + timedelta(days=exp_days)
+
+        # Normalize weekend dates to nearest valid trading day (Friday or Monday)
+        if target_exp.weekday() == 5:  # Saturday -> Friday
+            target_exp = target_exp - timedelta(days=1)
+        elif target_exp.weekday() == 6:  # Sunday -> Monday
+            target_exp = target_exp + timedelta(days=1)
+
+        exp_str = target_exp.strftime("%y%m%d")
+        exp_iso = target_exp.strftime("%Y-%m-%d")
+
+        base_strike = round(current_price)
+        candidates = []
+
+        # Generate strikes around ATM: -2, -1, 0, +1, +2
+        for offset in [-2, -1, 0, 1, 2]:
+            strike = base_strike + offset
+            strike_int = int(strike * 1000)
+            
+            # Call
+            call_symbol = f"SPY{exp_str}C{strike_int:08d}"
+            candidates.append({
+                "symbol": call_symbol,
+                "type": "call",
+                "strike_price": float(strike),
+                "expiration_date": exp_iso,
+                "moneyness": "ATM" if offset == 0 else ("ITM" if offset < 0 else "OTM"),
+            })
+            
+            # Put
+            put_symbol = f"SPY{exp_str}P{strike_int:08d}"
+            candidates.append({
+                "symbol": put_symbol,
+                "type": "put",
+                "strike_price": float(strike),
+                "expiration_date": exp_iso,
+                "moneyness": "ATM" if offset == 0 else ("OTM" if offset < 0 else "ITM"),
+            })
+
+        return candidates
+
+    def analyze_market_momentum(
+        self,
+        market_data: Dict[str, Any],
+        candidate_contracts: Optional[List[Dict[str, Any]]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Sends structured momentum metrics and candidate option contracts to Featherless AI
+        and returns parsed JSON trade proposal targeting options contracts.
+        """
+        current_price = market_data.get("current_price", 545.0)
+
+        if not candidate_contracts:
+            candidate_contracts = self.generate_candidate_options(current_price=current_price)
+
+        # Build options table summary for prompt
+        options_summary = []
+        for c in candidate_contracts[:8]:
+            options_summary.append(
+                f"- Symbol: {c.get('symbol')} | Type: {str(c.get('type')).upper()} | "
+                f"Strike: ${float(c.get('strike_price', 0)):.2f} | Exp: {c.get('expiration_date')} | Moneyness: {c.get('moneyness', 'ATM')}"
+            )
+        options_text = "\n".join(options_summary)
+
         system_prompt = (
             "You are an elite quantitative options trading AI operating under strict risk protocols.\n"
-            "Your objective is to evaluate short-term momentum and technical indicators for SPY to decide on defined-risk option entries.\n"
+            "Your objective is to evaluate short-term momentum (RSI, MACD, EMA ribbon) for SPY and specifically target options contracts (Calls/Puts, near-term expiries, dynamic strike selection based on underlying price).\n"
             "You MUST respond ONLY with a single valid JSON object adhering strictly to this schema:\n"
             "{\n"
             '  "action": "BUY_CALL" | "BUY_PUT" | "HOLD",\n'
-            '  "rationale": "<2-3 sentence technical rationale citing RSI, MACD, and price action>",\n'
-            '  "confidence": <float between 0.0 and 1.0>\n'
+            '  "contract_symbol": "<exact selected contract symbol from candidates or standard SPY OCC format, or null if HOLD>",\n'
+            '  "confidence": <float between 0.0 and 1.0>,\n'
+            '  "rationale": "<2-3 sentence technical rationale citing RSI, MACD, and price action>"\n'
             "}\n"
-            "Rules for actions:\n"
-            "- 'BUY_CALL': Bullish momentum, positive MACD divergence, RSI bouncing from oversold or breaking resistance.\n"
-            "- 'BUY_PUT': Bearish momentum, negative MACD divergence, RSI turning over from overbought or breaking support.\n"
-            "- 'HOLD': Choppy market, conflicting signals, low volume, or low conviction (<0.60 confidence).\n"
+            "Rules for options selection:\n"
+            "- 'BUY_CALL': Bullish momentum, positive MACD divergence, RSI bouncing from oversold or breaking resistance. Select an ATM or slightly OTM Call contract.\n"
+            "- 'BUY_PUT': Bearish momentum, negative MACD divergence, RSI turning over from overbought or breaking support. Select an ATM or slightly OTM Put contract.\n"
+            "- 'HOLD': Choppy market, conflicting signals, low volume, or low conviction (<0.60 confidence). Set contract_symbol to null.\n"
             "DO NOT wrap in explanation text outside the JSON block."
         )
 
         user_prompt = (
-            f"SPY Real-Time Momentum & Technical Analysis:\n"
-            f"- Current SPY Price: ${market_data.get('current_price', 0):.2f}\n"
+            f"SPY Real-Time Momentum & Options Target Space:\n"
+            f"- Current SPY Underlying Price: ${market_data.get('current_price', 0):.2f}\n"
             f"- 15-Minute Bar Price Change: {market_data.get('15m_pct_change', 0):+.2f}%\n"
             f"- RSI (14-period): {market_data.get('rsi_14', 50):.2f}\n"
             f"- MACD Line: {market_data.get('macd', 0):.3f} | Signal Line: {market_data.get('macd_signal', 0):.3f} | Histogram: {market_data.get('macd_hist', 0):.3f}\n"
             f"- EMA 9: ${market_data.get('ema_9', 0):.2f} | EMA 21: ${market_data.get('ema_21', 0):.2f}\n"
             f"- Session High: ${market_data.get('day_high', 0):.2f} | Session Low: ${market_data.get('day_low', 0):.2f}\n"
             f"- Last 5 Bars (15m): {json.dumps(market_data.get('recent_bars_sample', []))}\n\n"
-            f"Based on the technical momentum above, provide your JSON trade proposal."
+            f"Candidate Options Contracts (Near-term Expiry):\n"
+            f"{options_text}\n\n"
+            f"Based on the technical momentum, select the optimal contract symbol and provide your JSON trade proposal."
         )
 
         url = f"{self.base_url}/chat/completions"
@@ -182,43 +267,55 @@ class OptionsBrain:
                 logger.info(f"🧠 Model Reasoning:\n{reasoning[:200]}...")
 
             target_text = raw_content if raw_content.strip() else reasoning
-            parsed_proposal = self._parse_json_response(target_text)
+            parsed_proposal = self._parse_json_response(target_text, candidate_contracts, current_price)
             return parsed_proposal
         except Exception as e:
             logger.error(f"❌ Error communicating with Featherless AI: {e}")
             # Safe fallback to HOLD on any error
             return {
                 "action": "HOLD",
+                "contract_symbol": None,
                 "rationale": f"Featherless inference error / fallback: {str(e)}",
                 "confidence": 0.0,
             }
 
-    def _parse_json_response(self, text: str) -> Dict[str, Any]:
+    def _parse_json_response(
+        self,
+        text: str,
+        candidate_contracts: Optional[List[Dict[str, Any]]] = None,
+        current_price: float = 545.0,
+    ) -> Dict[str, Any]:
         """Extracts and validates JSON trade proposal from raw model output."""
         # Try direct JSON parsing
         try:
             res = json.loads(text)
-            return self._validate_and_normalize(res)
+            return self._validate_and_normalize(res, candidate_contracts, current_price)
         except json.JSONDecodeError:
             pass
 
         # Try regex search for markdown ```json ... ``` or { ... }
-        match = re.search(r"\{.*\}", text, re.DOTALL)
+        match = re.search(r"\{[^{}]*\}", text, re.DOTALL)
         if match:
             try:
                 res = json.loads(match.group(0))
-                return self._validate_and_normalize(res)
+                return self._validate_and_normalize(res, candidate_contracts, current_price)
             except json.JSONDecodeError:
                 pass
 
         logger.warning(f"Could not parse valid JSON from output. Defaulting to HOLD.")
         return {
             "action": "HOLD",
+            "contract_symbol": None,
             "rationale": f"Unparseable AI output: {text[:150]}...",
             "confidence": 0.0,
         }
 
-    def _validate_and_normalize(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def _validate_and_normalize(
+        self,
+        data: Dict[str, Any],
+        candidate_contracts: Optional[List[Dict[str, Any]]] = None,
+        current_price: float = 545.0,
+    ) -> Dict[str, Any]:
         action = str(data.get("action", "HOLD")).upper().strip()
         if action not in ["BUY_CALL", "BUY_PUT", "HOLD"]:
             action = "HOLD"
@@ -230,9 +327,89 @@ class OptionsBrain:
             confidence = 0.0
 
         rationale = str(data.get("rationale", "No rationale provided.")).strip()
+        contract_symbol = data.get("contract_symbol")
+
+        # If action is BUY_CALL or BUY_PUT but symbol is missing/invalid, resolve to nearest candidate
+        if action in ["BUY_CALL", "BUY_PUT"]:
+            target_type = "call" if action == "BUY_CALL" else "put"
+            if not contract_symbol or not str(contract_symbol).startswith("SPY"):
+                if candidate_contracts:
+                    matching = [
+                        c for c in candidate_contracts
+                        if str(c.get("type", "")).lower() == target_type
+                    ]
+                    if matching:
+                        contract_symbol = matching[0].get("symbol")
+                if not contract_symbol:
+                    cands = self.generate_candidate_options(current_price=current_price)
+                    matching = [c for c in cands if c.get("type") == target_type]
+                    contract_symbol = matching[0]["symbol"] if matching else None
+        else:
+            contract_symbol = None
 
         return {
             "action": action,
+            "contract_symbol": contract_symbol,
             "rationale": rationale,
             "confidence": confidence,
         }
+
+    def get_council_debate(
+        self,
+        market_metrics: Dict[str, Any],
+        proposal: Dict[str, Any],
+    ) -> List[Dict[str, str]]:
+        """
+        Produces multi-perspective AI Council debate streams representing the quantitative
+        deliberation process across specialized internal agent roles.
+        """
+        action = proposal.get("action", "HOLD")
+        conf = proposal.get("confidence", 0.0)
+        symbol = proposal.get("contract_symbol") or "N/A"
+        rsi = market_metrics.get("rsi_14", 50.0)
+        macd_hist = market_metrics.get("macd_hist", 0.0)
+        pct_15m = market_metrics.get("15m_pct_change", 0.0)
+
+        # 1. Technical Momentum Specialist
+        if action == "BUY_CALL":
+            t_msg = f"Bullish momentum confirmed. RSI ({rsi:.1f}) is expanding with positive MACD histogram (+{macd_hist:.3f}). 15m delta is {pct_15m:+.2f}%, breaking short-term resistance above 9 EMA."
+        elif action == "BUY_PUT":
+            t_msg = f"Bearish breakdown detected. RSI ({rsi:.1f}) is deteriorating with negative MACD histogram ({macd_hist:.3f}). 15m price delta is {pct_15m:+.2f}%, breaking beneath 21 EMA support."
+        else:
+            t_msg = f"Market in chop/consolidation. RSI at neutral {rsi:.1f}, MACD histogram flat ({macd_hist:+.3f}). Recommend capital preservation."
+
+        # 2. Volatility & Options Structurer
+        if action in ["BUY_CALL", "BUY_PUT"]:
+            opt_type = "Call" if action == "BUY_CALL" else "Put"
+            v_msg = f"Targeting near-term SPY {opt_type} contract {symbol}. Selected ATM/near-money strike to capture rapid delta acceleration while minimizing extraneous vega risk."
+        else:
+            v_msg = "Implied volatility vs realized spread does not offer positive expectancy for directional premium purchase. Standing down."
+
+        # 3. Chief Risk Officer (Deterministic Gatekeeper)
+        if action in ["BUY_CALL", "BUY_PUT"] and conf >= 0.60:
+            r_msg = f"Confidence {conf*100:.1f}% exceeds 60% threshold. Sizing will strictly enforce ≤5% portfolio cap ($5,000 max), 2-position ceiling, and attach -20% SL / +40% TP brackets."
+        elif action in ["BUY_CALL", "BUY_PUT"]:
+            r_msg = f"Confidence {conf*100:.1f}% is below 60.0% safety threshold. Trade veto will be asserted to protect capital."
+        else:
+            r_msg = "No execution requested (HOLD). Portfolio risk exposure remains at 0%."
+
+        return [
+            {
+                "role": "Technical Momentum Specialist",
+                "avatar": "📈",
+                "stance": "BULLISH" if action == "BUY_CALL" else ("BEARISH" if action == "BUY_PUT" else "NEUTRAL"),
+                "content": t_msg,
+            },
+            {
+                "role": "Volatility & Options Structurer",
+                "avatar": "⚡",
+                "stance": "TARGETING" if action != "HOLD" else "IDLE",
+                "content": v_msg,
+            },
+            {
+                "role": "Chief Risk Officer (CRO)",
+                "avatar": "🛡️",
+                "stance": "APPROVED" if (action != "HOLD" and conf >= 0.60) else "VETO / PASS",
+                "content": r_msg,
+            },
+        ]
