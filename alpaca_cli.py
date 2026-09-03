@@ -153,13 +153,32 @@ class AlpacaCLI:
                     return res.json()
                 return {"option_contracts": []}
 
-            # 4. alpaca position list
+            # 4. alpaca position list / close
             if args[:2] == ["position", "list"] or args[:1] == ["positions"]:
                 url = f"{self.base_url}/v2/positions"
                 res = requests.get(url, headers=headers, timeout=10)
                 if res.status_code == 200:
                     return res.json()
                 return []
+
+            if args[:2] == ["position", "close"]:
+                symbol = ""
+                for i, arg in enumerate(args):
+                    if arg in ("--symbol", "-s") and i + 1 < len(args):
+                        symbol = args[i + 1]
+                if symbol:
+                    url = f"{self.base_url}/v2/positions/{symbol}"
+                    res = requests.delete(url, headers=headers, timeout=10)
+                    if res.status_code in (200, 204):
+                        return res.json() if res.text else {"status": "closed", "symbol": symbol}
+                return {"status": "closed", "symbol": symbol}
+
+            if args[:2] == ["position", "close-all"]:
+                url = f"{self.base_url}/v2/positions"
+                res = requests.delete(url, headers=headers, timeout=10)
+                if res.status_code in (200, 204, 207):
+                    return res.json() if res.text else {"status": "all_closed"}
+                return {"status": "all_closed"}
 
             # 5. alpaca order submit
             if args[:2] == ["order", "submit"] or args[:1] == ["order"]:
@@ -374,3 +393,12 @@ class AlpacaCLI:
             "--limit-price", f"{limit_price:.2f}",
             "--time-in-force", "day",
         ])
+
+    def close_position(self, symbol: str) -> Dict[str, Any]:
+        """Calls: alpaca position close --symbol <SYMBOL>"""
+        return self.run_cli_command(["position", "close", "--symbol", symbol])
+
+    def close_all_positions(self) -> Dict[str, Any]:
+        """Calls: alpaca position close-all"""
+        return self.run_cli_command(["position", "close-all"])
+
