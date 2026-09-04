@@ -356,60 +356,105 @@ class OptionsBrain:
 
     def get_council_debate(
         self,
-        market_metrics: Dict[str, Any],
-        proposal: Dict[str, Any],
-    ) -> List[Dict[str, str]]:
+        market_metrics: Optional[Dict[str, Any]] = None,
+        proposal: Optional[Dict[str, Any]] = None,
+        indicators: Optional[Dict[str, Any]] = None,
+        ai_decision: Optional[Dict[str, Any]] = None,
+    ) -> List[Dict[str, Any]]:
         """
         Produces multi-perspective AI Council debate streams representing the quantitative
         deliberation process across specialized internal agent roles.
         """
-        action = proposal.get("action", "HOLD")
-        conf = proposal.get("confidence", 0.0)
-        symbol = proposal.get("contract_symbol") or "N/A"
-        rsi = market_metrics.get("rsi_14", 50.0)
-        macd_hist = market_metrics.get("macd_hist", 0.0)
-        pct_15m = market_metrics.get("15m_pct_change", 0.0)
+        metrics = market_metrics or indicators or {}
+        dec = proposal or ai_decision or {}
 
-        # 1. Technical Momentum Specialist
-        if action == "BUY_CALL":
-            t_msg = f"Bullish momentum confirmed. RSI ({rsi:.1f}) is expanding with positive MACD histogram (+{macd_hist:.3f}). 15m delta is {pct_15m:+.2f}%, breaking short-term resistance above 9 EMA."
-        elif action == "BUY_PUT":
-            t_msg = f"Bearish breakdown detected. RSI ({rsi:.1f}) is deteriorating with negative MACD histogram ({macd_hist:.3f}). 15m price delta is {pct_15m:+.2f}%, breaking beneath 21 EMA support."
+        action = dec.get("action", "HOLD")
+        conf = dec.get("confidence", 0.0)
+        symbol = dec.get("contract_symbol") or "N/A"
+        rsi = metrics.get("rsi_14", 50.0)
+        macd_hist = metrics.get("macd_hist", 0.0)
+        pct_15m = metrics.get("15m_pct_change", 0.0)
+        price = metrics.get("current_price", 545.0)
+
+        # 1. Bull Strategist
+        if action == "BUY_CALL" or rsi >= 50 or macd_hist > 0:
+            bull_msg = (
+                f"Bullish momentum expansion at ${price:.2f}. RSI-14 ({rsi:.1f}) and MACD histogram (+{macd_hist:.3f}) "
+                f"confirm upside continuation above 9/21 EMA ribbons. Targeting near-term ATM Call contract {symbol} "
+                f"to maximize gamma and delta acceleration."
+            )
         else:
-            t_msg = f"Market in chop/consolidation. RSI at neutral {rsi:.1f}, MACD histogram flat ({macd_hist:+.3f}). Recommend capital preservation."
+            bull_msg = (
+                f"Consolidation mode at ${price:.2f}. RSI at {rsi:.1f} shows neutral momentum. "
+                f"Standing by for bullish mean-reversion retest of 9 EMA support before targeting call premium."
+            )
 
-        # 2. Volatility & Options Structurer
-        if action in ["BUY_CALL", "BUY_PUT"]:
-            opt_type = "Call" if action == "BUY_CALL" else "Put"
-            v_msg = f"Targeting near-term SPY {opt_type} contract {symbol}. Selected ATM/near-money strike to capture rapid delta acceleration while minimizing extraneous vega risk."
+        # 2. Bear Strategist
+        if action == "BUY_PUT" or rsi < 50 or macd_hist < 0:
+            bear_msg = (
+                f"Distribution pressure active. 15m delta is {pct_15m:+.2f}% with MACD histogram widening negative ({macd_hist:.3f}). "
+                f"RSI-14 ({rsi:.1f}) confirms lower-high breakdown. Targeting Put contract {symbol} to hedge or capture downward momentum."
+            )
         else:
-            v_msg = "Implied volatility vs realized spread does not offer positive expectancy for directional premium purchase. Standing down."
+            bear_msg = (
+                f"Intraday price is approaching resistance bands. Reward-to-risk ratio is tightening. "
+                f"Any failure to break through session high should trigger protective put hedging."
+            )
 
-        # 3. Chief Risk Officer (Deterministic Gatekeeper)
+        # 3. Risk Arbiter
         if action in ["BUY_CALL", "BUY_PUT"] and conf >= 0.60:
-            r_msg = f"Confidence {conf*100:.1f}% exceeds 60% threshold. Sizing will strictly enforce ≤5% portfolio cap ($5,000 max), 2-position ceiling, and attach -20% SL / +40% TP brackets."
+            risk_msg = (
+                f"Mandate clearance: Confidence ({conf*100:.1f}%) meets threshold. "
+                f"Enforcing strict 5% portfolio cap ($5,000 max ceiling), max 2 concurrent positions, "
+                f"and active mathematical brackets: -25% Stop-Loss / +30% Take-Profit."
+            )
         elif action in ["BUY_CALL", "BUY_PUT"]:
-            r_msg = f"Confidence {conf*100:.1f}% is below 60.0% safety threshold. Trade veto will be asserted to protect capital."
+            risk_msg = (
+                f"Risk VETO asserted: Confidence ({conf*100:.1f}%) is below 60.0% threshold. "
+                f"Capital preserved in cash reserve (0% exposure)."
+            )
         else:
-            r_msg = "No execution requested (HOLD). Portfolio risk exposure remains at 0%."
+            risk_msg = (
+                f"Signal is HOLD. Volatility regime warrants capital preservation. "
+                f"Portfolio exposure locked at 0.0% (Drawdown ceiling: 2.0%)."
+            )
 
         return [
             {
-                "role": "Technical Momentum Specialist",
-                "avatar": "📈",
-                "stance": "BULLISH" if action == "BUY_CALL" else ("BEARISH" if action == "BUY_PUT" else "NEUTRAL"),
-                "content": t_msg,
+                "role": "Bull Strategist",
+                "avatar": "🐂",
+                "badge": "MOMENTUM / CALLS",
+                "color": "#00F59B",
+                "stance": "BULLISH" if action == "BUY_CALL" else "NEUTRAL",
+                "content": bull_msg,
             },
             {
-                "role": "Volatility & Options Structurer",
-                "avatar": "⚡",
-                "stance": "TARGETING" if action != "HOLD" else "IDLE",
-                "content": v_msg,
+                "role": "Bear Strategist",
+                "avatar": "🐻",
+                "badge": "RESISTANCE / PUTS",
+                "color": "#FF3366",
+                "stance": "BEARISH" if action == "BUY_PUT" else "DEFENSIVE",
+                "content": bear_msg,
             },
             {
-                "role": "Chief Risk Officer (CRO)",
-                "avatar": "🛡️",
-                "stance": "APPROVED" if (action != "HOLD" and conf >= 0.60) else "VETO / PASS",
-                "content": r_msg,
+                "role": "Risk Arbiter",
+                "avatar": "⚖️",
+                "badge": "GOVERNOR / SIZING",
+                "color": "#00D8F6",
+                "stance": "APPROVED" if (action != "HOLD" and conf >= 0.60) else "VETO / STAND DOWN",
+                "content": risk_msg,
             },
         ]
+
+    def simulate_council_debate(self, market_metrics: Dict[str, Any]) -> Dict[str, str]:
+        """
+        Generates 3-agent deliberation theses (Bull Strategist, Bear Strategist, Risk Arbiter)
+        based on current market metrics. Returns a dictionary mapping roles to theses.
+        """
+        debate_list = self.get_council_debate(market_metrics=market_metrics, proposal={"action": "HOLD", "confidence": 0.5})
+        return {
+            "bull_thesis": debate_list[0]["content"],
+            "bear_thesis": debate_list[1]["content"],
+            "risk_arbiter": debate_list[2]["content"],
+        }
+

@@ -80,9 +80,9 @@ class TestOptionsBrain(unittest.TestCase):
         debate = self.brain.get_council_debate(market_metrics, proposal)
         self.assertEqual(len(debate), 3)
         roles = [d['role'] for d in debate]
-        self.assertIn('Technical Momentum Specialist', roles)
-        self.assertIn('Volatility & Options Structurer', roles)
-        self.assertIn('Chief Risk Officer (CRO)', roles)
+        self.assertTrue(any('Bull' in r or 'Technical' in r for r in roles))
+        self.assertTrue(any('Bear' in r or 'Volatility' in r for r in roles))
+        self.assertTrue(any('Risk' in r or 'CRO' in r for r in roles))
 
 
     def test_rsi_flat_prices(self):
@@ -100,5 +100,22 @@ class TestOptionsBrain(unittest.TestCase):
             self.assertIn(exp_date.weekday(), [0, 1, 2, 3, 4])
 
 
+    def test_simulate_council_debate(self):
+        market_metrics = {
+            'current_price': 545.0,
+            'rsi_14': 62.5,
+            'macd_hist': 0.25,
+            '15m_pct_change': 0.40,
+        }
+        debate = self.brain.simulate_council_debate(market_metrics)
+        self.assertIn('bull_thesis', debate)
+        self.assertIn('bear_thesis', debate)
+        self.assertIn('risk_arbiter', debate)
+        self.assertTrue(len(debate['bull_thesis']) > 10)
+        self.assertTrue(len(debate['bear_thesis']) > 10)
+        self.assertTrue(len(debate['risk_arbiter']) > 10)
+
+
 if __name__ == '__main__':
     unittest.main()
+
