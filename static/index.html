@@ -172,7 +172,7 @@
         <a href="/docs" target="_blank" class="hover:text-white transition-colors">API Docs</a>
       </nav>
 
-      <!-- Right Header Actions: Status & Launch Desk CTA -->
+      <!-- Right Header Actions: Status, Launch Desk CTA & Mobile Hamburger -->
       <div class="flex items-center space-x-3">
         <!-- Alpaca Account ID Pill -->
         <div class="hidden lg:flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-emeraldGlow/10 border border-emeraldGlow/30 font-mono text-[11px] text-emeraldGlow">
@@ -188,17 +188,46 @@
           <span class="text-emeraldGlow font-semibold">CLI ONLINE</span>
         </div>
 
-        <a href="/app" class="relative group overflow-hidden rounded-lg p-[1px] font-medium transition-all duration-300 hover:scale-102 active:scale-95 shadow-sm">
+        <a href="/app" class="hidden sm:inline-flex relative group overflow-hidden rounded-lg p-[1px] font-medium transition-all duration-300 hover:scale-102 active:scale-95 shadow-sm">
           <div class="absolute inset-0 bg-gradient-to-r from-emeraldGlow via-teal-500 to-cyanGlow transition-all duration-300 group-hover:opacity-100"></div>
-          <div class="relative px-3.5 py-1.5 rounded-[7px] bg-[#070C1E] flex items-center space-x-1.5 transition-all duration-300 group-hover:bg-[#070C1E]/80">
-            <span class="font-heading font-medium text-xs text-white tracking-wide">Launch Desk</span>
-            <svg class="w-3.5 h-3.5 text-emeraldGlow transform transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div class="relative px-4 py-2 rounded-[7px] bg-[#070C1E] flex items-center space-x-1.5 transition-all duration-300 group-hover:bg-[#070C1E]/80">
+            <span class="font-heading font-medium text-sm text-white tracking-wide">Launch Trading Desk</span>
+            <svg class="w-4 h-4 text-emeraldGlow transform transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
           </div>
         </a>
+
+        <!-- Mobile Hamburger Menu Button -->
+        <button id="mobile-menu-btn" aria-label="Toggle navigation menu" class="block md:hidden p-2 rounded-lg bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.1] text-slate-300 hover:text-white transition-all focus:outline-none">
+          <svg id="mobile-menu-icon-open" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+          <svg id="mobile-menu-icon-close" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
 
+    </div>
+
+    <!-- Mobile Navigation Dropdown Menu -->
+    <div id="mobile-nav-menu" class="hidden md:hidden bg-midnight/95 backdrop-blur-2xl border-t border-borderDim px-4 pt-3 pb-5 space-y-3 font-mono text-sm">
+      <a href="#pipeline" class="mobile-nav-link block px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/[0.05] transition-colors">Architecture</a>
+      <a href="#performance" class="mobile-nav-link block px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/[0.05] transition-colors">Performance</a>
+      <a href="#council" class="mobile-nav-link block px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/[0.05] transition-colors">Tri-Agent Council</a>
+      <a href="#risk-governor" class="mobile-nav-link block px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/[0.05] transition-colors">Risk Governor</a>
+      <a href="/docs" target="_blank" class="mobile-nav-link block px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/[0.05] transition-colors">API Docs</a>
+      
+      <div class="pt-2 border-t border-white/10 flex flex-col gap-2">
+        <div class="flex items-center justify-between text-xs px-2.5 py-1.5 text-emeraldGlow font-mono bg-emeraldGlow/10 rounded border border-emeraldGlow/20">
+          <span>💼 ACC: PA3CMCT5LP09</span>
+          <span class="text-[10px] font-bold">CLI ONLINE</span>
+        </div>
+        <a href="/app" class="w-full text-center px-4 py-2.5 rounded-lg bg-gradient-to-r from-emeraldGlow via-teal-500 to-cyanGlow text-midnight font-bold font-heading text-sm shadow-glow-emerald">
+          Launch Trading Desk ➔
+        </a>
+      </div>
     </div>
   </header>
 
@@ -225,15 +254,15 @@
     </p>
 
     <!-- Hero CTA Button Group -->
-    <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-      <a href="/app" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-midnight font-heading font-bold text-base tracking-wide shadow-glow-emerald hover:brightness-110 transform transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] flex items-center justify-center space-x-3">
-        <svg class="w-5 h-5 text-midnight" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-3.5 mb-16">
+      <a href="/app" class="w-full sm:w-auto px-4 py-2 text-sm rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-midnight font-heading font-bold tracking-wide shadow-glow-emerald hover:brightness-110 transform transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] flex items-center justify-center space-x-2">
+        <svg class="w-4 h-4 text-midnight" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
         </svg>
         <span>Launch Trading Desk</span>
       </a>
 
-      <a href="#pipeline" class="w-full sm:w-auto px-8 py-4 rounded-xl glass-panel text-white font-heading font-semibold text-base tracking-wide hover:bg-white/[0.05] border-borderDim hover:border-indigoAccent/40 transition-all duration-300 flex items-center justify-center space-x-2">
+      <a href="#pipeline" class="w-full sm:w-auto px-4 py-2 text-sm rounded-xl glass-panel text-white font-heading font-semibold tracking-wide hover:bg-white/[0.05] border-borderDim hover:border-indigoAccent/40 transition-all duration-300 flex items-center justify-center space-x-2">
         <span>Explore Node Pipeline</span>
         <svg class="w-4 h-4 text-textMuted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -718,5 +747,38 @@
     </div>
   </footer>
 
+  <!-- Mobile Menu Toggle Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const menuBtn = document.getElementById('mobile-menu-btn');
+      const mobileMenu = document.getElementById('mobile-nav-menu');
+      const iconOpen = document.getElementById('mobile-menu-icon-open');
+      const iconClose = document.getElementById('mobile-menu-icon-close');
+      const navLinks = document.querySelectorAll('.mobile-nav-link');
+
+      if (menuBtn && mobileMenu) {
+        menuBtn.addEventListener('click', () => {
+          const isHidden = mobileMenu.classList.contains('hidden');
+          if (isHidden) {
+            mobileMenu.classList.remove('hidden');
+            if (iconOpen) iconOpen.classList.add('hidden');
+            if (iconClose) iconClose.classList.remove('hidden');
+          } else {
+            mobileMenu.classList.add('hidden');
+            if (iconOpen) iconOpen.classList.remove('hidden');
+            if (iconClose) iconClose.classList.add('hidden');
+          }
+        });
+
+        navLinks.forEach(link => {
+          link.addEventListener('click', () => {
+            mobileMenu.classList.add('hidden');
+            if (iconOpen) iconOpen.classList.remove('hidden');
+            if (iconClose) iconClose.classList.add('hidden');
+          });
+        });
+      }
+    });
+  </script>
 </body>
 </html>
