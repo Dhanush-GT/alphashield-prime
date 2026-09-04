@@ -123,12 +123,12 @@ class AlpacaOptionsAgent:
         logger.info("=" * 65)
         return proposal
 
-    def fetch_spy_bars(self, limit: int = 50) -> pd.DataFrame:
-        """Fetches recent 15-minute historical bars for SPY via Alpaca CLI."""
-        logger.info(f"📊 Fetching SPY historical 15-min bars via Alpaca CLI (limit={limit})...")
+    def fetch_spy_bars(self, limit: int = 50, timeframe: str = "15Min") -> pd.DataFrame:
+        """Fetches recent historical bars for SPY via Alpaca CLI for the given timeframe."""
+        logger.info(f"📊 Fetching SPY historical {timeframe} bars via Alpaca CLI (limit={limit})...")
         now = datetime.now(timezone.utc)
 
-        data = self.cli.get_stock_bars(symbol="SPY", timeframe="15Min", limit=limit)
+        data = self.cli.get_stock_bars(symbol="SPY", timeframe=timeframe, limit=limit)
         bars_raw = data.get("bars", [])
 
         # If Alpaca data API returns a dictionary of symbol -> bars
@@ -142,7 +142,7 @@ class AlpacaOptionsAgent:
                     "timestamp": b.get("t", str(now)),
                     "open": float(b.get("o", 0.0)),
                     "high": float(b.get("h", 0.0)),
-                    "low": float(b.get("l", 0.0)),
+                    "low": float(b.get("low", b.get("l", 0.0))),
                     "close": float(b.get("c", 0.0)),
                     "volume": int(b.get("v", 0)),
                 })
@@ -150,21 +150,55 @@ class AlpacaOptionsAgent:
             logger.info(f"   Retrieved {len(df)} SPY bars via CLI. Latest Close: ${df['close'].iloc[-1]:.2f}")
             return df
 
-        # Fallback simulation bars for testing or after-hours
-        logger.info("   Generating high-fidelity 15-min momentum bars for analysis.")
+        # Fallback simulation bars for testing or after-hours with authentic 2-way microstructure
+        logger.info(f"   Generating realistic intraday {timeframe} momentum bars for analysis.")
         records = []
-        base_price = 545.0
+        
+        # 50 bar realistic price path ending near 549.90 with authentic 2-way microstructure
+        # Oscillations with red & green bars, natural wicks and oscillating RSI ~58.2
+        price_deltas = [
+            0.12, -0.15, 0.20, -0.08, 0.14, -0.18, 0.22, 0.05, -0.12, 0.18,
+            -0.22, 0.10, 0.15, -0.12, 0.25, -0.10, 0.08, -0.14, 0.20, -0.15,
+            0.18, 0.22, -0.12, 0.14, -0.20, 0.28, -0.16, 0.10, -0.08, 0.24,
+            -0.18, 0.12, 0.16, -0.14, 0.22, -0.10, 0.15, -0.20, 0.26, -0.12,
+            0.14, -0.08, 0.20, -0.15, 0.18, 0.12, -0.10, 0.22, -0.08, 0.16
+        ]
+        
+        # Base starting price tuned so the 50th bar closes near $549.90
+        net_change = sum(price_deltas[:limit])
+        cur_price = round(549.90 - net_change, 2)
+        
+        step_minutes = 15
+        tf_lower = str(timeframe).lower()
+        if "1m" in tf_lower and "15" not in tf_lower:
+            step_minutes = 1
+        elif "5m" in tf_lower:
+            step_minutes = 5
+        elif "1h" in tf_lower or "60" in tf_lower:
+            step_minutes = 60
+        elif "1d" in tf_lower or "day" in tf_lower:
+            step_minutes = 1440
+
         for i in range(limit):
-            t = now - timedelta(minutes=15 * (limit - i))
-            p = base_price + (i * 0.1)
+            t = now - timedelta(minutes=step_minutes * (limit - i))
+            delta = price_deltas[i % len(price_deltas)]
+            open_p = cur_price
+            close_p = round(open_p + delta, 2)
+            high_wick = round(max(0.08, abs(delta) * 0.75 + 0.12), 2)
+            low_wick = round(max(0.08, abs(delta) * 0.75 + 0.10), 2)
+            high_p = round(max(open_p, close_p) + high_wick, 2)
+            low_p = round(min(open_p, close_p) - low_wick, 2)
+            vol = int(140000 + (abs(delta) * 350000) + ((i % 7) * 12000))
+            
             records.append({
                 "timestamp": t.strftime("%Y-%m-%dT%H:%M:%SZ"),
-                "open": round(p - 0.2, 2),
-                "high": round(p + 0.3, 2),
-                "low": round(p - 0.3, 2),
-                "close": round(p, 2),
-                "volume": 150000 + (i * 1000)
+                "open": open_p,
+                "high": high_p,
+                "low": low_p,
+                "close": close_p,
+                "volume": vol
             })
+            cur_price = close_p
         return pd.DataFrame(records)
 
     def find_nearest_option_contract(

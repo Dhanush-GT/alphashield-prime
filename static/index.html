@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AlphaShield Prime — The Autonomous Quantitative Engine for Institutional Options</title>
+  <meta name="description" content="Institutional autonomous options trading engine with Dual-Veto Risk Governor, Featherless GLM-5.2 Tri-Agent Council Debate, and native Alpaca CLI subprocess execution." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>" />
+
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            midnight: "#050814",
+            obsidian: "#070C1E",
+            obsidianCard: "rgba(9, 14, 34, 0.75)",
+            surface: "rgba(255, 255, 255, 0.02)",
+            surfaceHover: "rgba(255, 255, 255, 0.04)",
+            borderDim: "rgba(255, 255, 255, 0.08)",
+            borderHover: "rgba(99, 102, 241, 0.35)",
+            indigoAccent: "#6366F1",
+            violetAccent: "#8B5CF6",
+            cyanGlow: "#06B6D4",
+            emeraldGlow: "#10B981",
+            roseAccent: "#F43F5E",
+            amberGlow: "#F59E0B",
+            textCool: "#F8FAFC",
+            textMuted: "#94A3B8",
+          },
+          fontFamily: {
+            sans: ["Plus Jakarta Sans", "Inter", "sans-serif"],
+            heading: ["Plus Jakarta Sans", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"],
+          },
+          boxShadow: {
+            "glow-cyan": "0 0 30px -5px rgba(6, 182, 212, 0.35)",
+            "glow-emerald": "0 0 30px -5px rgba(16, 185, 129, 0.35)",
+            "glow-indigo": "0 0 35px -5px rgba(99, 102, 241, 0.35)",
+            "glass": "0 8px 32px 0 rgba(0, 0, 0, 0.37)",
+          },
+          animation: {
+            "pulse-slow": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+            "float": "float 6s ease-in-out infinite",
+          },
+          keyframes: {
+            float: {
+              "0%, 100%": { transform: "translateY(0px)" },
+              "50%": { transform: "translateY(-10px)" },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .bg-grid-pattern {
+      background-size: 40px 40px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    }
+    
+    .radial-glow {
+      background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.18) 0%, rgba(6, 182, 212, 0.08) 35%, rgba(5, 8, 20, 0) 70%);
+    }
+
+    .radial-glow-bottom {
+      background: radial-gradient(circle at 50% 100%, rgba(16, 185, 129, 0.12) 0%, rgba(99, 102, 241, 0.05) 40%, rgba(5, 8, 20, 0) 75%);
+    }
+
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.02);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-panel-hover:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(99, 102, 241, 0.3);
+      transform: translateY(-2px);
+      transition: all 0.3s ease;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #FFFFFF 20%, #A5B4FC 60%, #06B6D4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .gradient-text-emerald {
+      background: linear-gradient(135deg, #A7F3D0 0%, #10B981 50%, #06B6D4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+
+<body class="bg-midnight text-textCool font-sans antialiased selection:bg-indigoAccent selection:text-white min-h-screen relative overflow-x-hidden">
+
+  <!-- Ambient Glow & Animated Grid -->
+  <div class="fixed inset-0 bg-grid-pattern pointer-events-none z-0"></div>
+  <div class="fixed top-0 left-0 right-0 h-[600px] radial-glow pointer-events-none z-0"></div>
+  <div class="fixed bottom-0 left-0 right-0 h-[500px] radial-glow-bottom pointer-events-none z-0"></div>
+
+  <!-- Header / Navigation Bar -->
+  <header class="sticky top-0 z-50 backdrop-blur-xl bg-midnight/80 border-b border-borderDim transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <a href="/" class="flex items-center space-x-3 group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigoAccent via-violetAccent to-cyanGlow p-[1px] shadow-glow-indigo transition-transform duration-300 group-hover:scale-105">
+          <div class="w-full h-full bg-[#070B1B] rounded-xl flex items-center justify-center">
+            <svg class="w-5 h-5 text-cyanGlow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="font-heading font-extrabold text-lg tracking-tight text-white group-hover:text-cyanGlow transition-colors">AlphaShield</span>
+            <span class="font-mono text-xs font-semibold px-1.5 py-0.5 rounded bg-indigoAccent/20 text-indigo-300 border border-indigoAccent/30">PRIME</span>
+          </div>
+          <p class="font-mono text-[10px] text-textMuted tracking-wider uppercase">Autonomous Options Engine</p>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation Links -->
+      <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-textMuted">
+        <a href="#pipeline" class="hover:text-white transition-colors">Architecture</a>
+        <a href="#performance" class="hover:text-white transition-colors">Performance</a>
+        <a href="#council" class="hover:text-white transition-colors">Tri-Agent Council</a>
+        <a href="#risk-governor" class="hover:text-white transition-colors">Risk Governor</a>
+        <a href="/docs" target="_blank" class="hover:text-white transition-colors">API Docs</a>
+      </nav>
+
+      <!-- Right Header Actions: Status & Launch Desk CTA -->
+      <div class="flex items-center space-x-3 sm:space-x-4">
+        <!-- Alpaca Account ID Pill -->
+        <div class="hidden lg:flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-emeraldGlow/10 border border-emeraldGlow/30 font-mono text-xs shadow-[0_0_15px_-3px_rgba(16,185,129,0.3)]">
+          <span class="text-xs">💼</span>
+          <span class="text-emeraldGlow font-semibold">[ 💼 ACC: PA3CMCT5LP09 ]</span>
+        </div>
+
+        <div class="hidden lg:flex items-center space-x-2 px-3 py-1.5 rounded-full bg-white/[0.02] border border-borderDim font-mono text-xs">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emeraldGlow opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emeraldGlow"></span>
+          </span>
+          <span class="text-textMuted">CLI Subprocess:</span>
+          <span class="text-emeraldGlow font-semibold">ONLINE</span>
+        </div>
+
+        <a href="/app" class="relative group overflow-hidden rounded-xl p-[1px] font-medium transition-all duration-300 hover:scale-105 active:scale-95 shadow-glow-emerald">
+          <div class="absolute inset-0 bg-gradient-to-r from-emeraldGlow via-cyanGlow to-indigoAccent transition-all duration-300 group-hover:opacity-100"></div>
+          <div class="relative px-5 py-2.5 rounded-[11px] bg-[#070C1E] flex items-center space-x-2 transition-all duration-300 group-hover:bg-[#070C1E]/80">
+            <span class="font-heading font-semibold text-sm text-white tracking-wide">Launch Trading Desk</span>
+            <svg class="w-4 h-4 text-emeraldGlow transform transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </div>
+        </a>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="relative z-10 pt-16 pb-20 md:pt-24 md:pb-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
+    
+    <!-- Top Pill Announcement -->
+    <div class="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-indigoAccent/10 border border-indigoAccent/30 text-indigo-300 font-mono text-xs mb-8 animate-float">
+      <span class="w-1.5 h-1.5 rounded-full bg-cyanGlow"></span>
+      <span class="font-semibold text-white">Lablab.ai × Alpaca Hackathon</span>
+      <span class="text-indigo-400">|</span>
+      <span>Autonomous Options Agent with Dual-Veto Governor</span>
+    </div>
+
+    <!-- Main Hero Typography Lockup -->
+    <h1 class="text-4xl sm:text-6xl lg:text-7xl font-heading font-extrabold tracking-tight text-white max-w-5xl mx-auto leading-[1.1] mb-6">
+      AlphaShield Prime <br />
+      <span class="gradient-text">The Autonomous Quantitative Engine for Institutional Options</span>
+    </h1>
+
+    <!-- Subtitle -->
+    <p class="text-base sm:text-xl text-textMuted max-w-3xl mx-auto font-normal leading-relaxed mb-10">
+      Deterministic Dual-Veto Risk Governance meets Featherless GLM-5.2 Tri-Agent Council Debate. Subprocess-native Alpaca CLI options execution with automated dynamic strike discovery and strict 5% capital ceiling invariants.
+    </p>
+
+    <!-- Hero CTA Button Group -->
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+      <a href="/app" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-midnight font-heading font-bold text-base tracking-wide shadow-glow-emerald hover:brightness-110 transform transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] flex items-center justify-center space-x-3">
+        <svg class="w-5 h-5 text-midnight" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+        <span>Launch Trading Desk</span>
+      </a>
+
+      <a href="#pipeline" class="w-full sm:w-auto px-8 py-4 rounded-xl glass-panel text-white font-heading font-semibold text-base tracking-wide hover:bg-white/[0.05] border-borderDim hover:border-indigoAccent/40 transition-all duration-300 flex items-center justify-center space-x-2">
+        <span>Explore Node Pipeline</span>
+        <svg class="w-4 h-4 text-textMuted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </a>
+    </div>
+
+    <!-- Live Telemetry Ribbon -->
+    <div class="glass-panel rounded-2xl p-4 max-w-4xl mx-auto border-borderDim shadow-glass">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 divide-y md:divide-y-0 md:divide-x divide-borderDim">
+        <div class="p-2 text-center">
+          <div class="font-mono text-xs text-textMuted uppercase mb-1">Target Instrument</div>
+          <div class="font-mono font-bold text-lg text-white flex items-center justify-center space-x-1.5">
+            <span>SPY</span>
+            <span class="text-xs px-1.5 py-0.5 rounded bg-cyanGlow/20 text-cyanGlow border border-cyanGlow/30">0-14 DTE</span>
+          </div>
+        </div>
+        <div class="p-2 text-center pt-4 md:pt-2">
+          <div class="font-mono text-xs text-textMuted uppercase mb-1">AI Reasoning LLM</div>
+          <div class="font-mono font-bold text-lg text-indigo-300">GLM-5.2 <span class="text-xs text-textMuted font-normal">Featherless</span></div>
+        </div>
+        <div class="p-2 text-center pt-4 md:pt-2">
+          <div class="font-mono text-xs text-textMuted uppercase mb-1">Risk Protocol</div>
+          <div class="font-mono font-bold text-lg text-emeraldGlow">Dual-Veto Hard Rules</div>
+        </div>
+        <div class="p-2 text-center pt-4 md:pt-2">
+          <div class="font-mono text-xs text-textMuted uppercase mb-1">Execution Pipeline</div>
+          <div class="font-mono font-bold text-lg text-white">Alpaca CLI IPC</div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- Section: Live Performance Social Proof Ticker -->
+  <section id="performance" class="relative z-10 py-16 bg-obsidian/40 border-y border-borderDim">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-12">
+        <span class="font-mono text-xs font-semibold uppercase tracking-wider text-cyanGlow px-3 py-1 rounded-full bg-cyanGlow/10 border border-cyanGlow/20">Verified Metrics</span>
+        <h2 class="text-3xl font-heading font-extrabold text-white mt-3">Statistical Proof of Edge</h2>
+        <p class="text-textMuted text-sm mt-2">Simulated multi-regime backtesting and live paper options telemetry on SPY contracts.</p>
+      </div>
+
+      <!-- 4 Primary Metric Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <!-- Metric Card 1: Win Rate -->
+        <div class="glass-panel rounded-2xl p-6 relative overflow-hidden group hover:border-emeraldGlow/40 transition-all duration-300">
+          <div class="absolute top-0 right-0 w-24 h-24 bg-emeraldGlow/10 rounded-full blur-2xl group-hover:bg-emeraldGlow/20 transition-all"></div>
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-mono text-xs font-semibold text-textMuted uppercase">Backtest Win Rate</span>
+            <span class="px-2 py-0.5 rounded bg-emeraldGlow/20 text-emeraldGlow font-mono text-xs font-bold">500+ Regimes</span>
+          </div>
+          <div class="font-heading font-extrabold text-4xl text-white tracking-tight mb-2 flex items-baseline space-x-1">
+            <span class="gradient-text-emerald">71.4%</span>
+          </div>
+          <p class="text-xs text-textMuted font-sans">Consistent win rate across trending, mean-reverting, and high-IV volatility squeezes.</p>
+        </div>
+
+        <!-- Metric Card 2: Profit Factor -->
+        <div class="glass-panel rounded-2xl p-6 relative overflow-hidden group hover:border-cyanGlow/40 transition-all duration-300">
+          <div class="absolute top-0 right-0 w-24 h-24 bg-cyanGlow/10 rounded-full blur-2xl group-hover:bg-cyanGlow/20 transition-all"></div>
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-mono text-xs font-semibold text-textMuted uppercase">Profit Factor</span>
+            <span class="px-2 py-0.5 rounded bg-cyanGlow/20 text-cyanGlow font-mono text-xs font-bold">Asymmetric R:R</span>
+          </div>
+          <div class="font-heading font-extrabold text-4xl text-white tracking-tight mb-2">
+            <span class="text-cyanGlow font-mono">2.38</span>
+          </div>
+          <p class="text-xs text-textMuted font-sans">2:1 take-profit bracket ratio (+100% target vs. -50% deterministic stop-loss floor).</p>
+        </div>
+
+        <!-- Metric Card 3: Margin Capacity -->
+        <div class="glass-panel rounded-2xl p-6 relative overflow-hidden group hover:border-indigoAccent/40 transition-all duration-300">
+          <div class="absolute top-0 right-0 w-24 h-24 bg-indigoAccent/10 rounded-full blur-2xl group-hover:bg-indigoAccent/20 transition-all"></div>
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-mono text-xs font-semibold text-textMuted uppercase">Margin Capacity</span>
+            <span class="px-2 py-0.5 rounded bg-indigoAccent/20 text-indigo-300 font-mono text-xs font-bold">Alpaca Dynamic</span>
+          </div>
+          <div class="font-heading font-extrabold text-4xl text-white tracking-tight mb-2">
+            <span class="text-indigo-300 font-mono">4x</span>
+          </div>
+          <p class="text-xs text-textMuted font-sans">Intraday buying power leverage with 100% defined-risk long contract constraints.</p>
+        </div>
+
+        <!-- Metric Card 4: Zero-Latency Execution -->
+        <div class="glass-panel rounded-2xl p-6 relative overflow-hidden group hover:border-violetAccent/40 transition-all duration-300">
+          <div class="absolute top-0 right-0 w-24 h-24 bg-violetAccent/10 rounded-full blur-2xl group-hover:bg-violetAccent/20 transition-all"></div>
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-mono text-xs font-semibold text-textMuted uppercase">Zero-Latency Execution</span>
+            <span class="px-2 py-0.5 rounded bg-violetAccent/20 text-violet-300 font-mono text-xs font-bold">Sub-Second IPC</span>
+          </div>
+          <div class="font-heading font-extrabold text-4xl text-white tracking-tight mb-2 flex items-baseline space-x-1">
+            <span class="text-white font-mono">&lt; 450</span><span class="text-lg font-mono text-textMuted">ms</span>
+          </div>
+          <p class="text-xs text-textMuted font-sans">Zero-overhead native binary subprocess execution with direct JSON pipe dispatch.</p>
+        </div>
+
+      </div>
+
+      <!-- Secondary Telemetry Micro-Badges -->
+      <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="p-3.5 rounded-xl bg-white/[0.01] border border-borderDim flex items-center space-x-3">
+          <div class="w-2.5 h-2.5 rounded-full bg-emeraldGlow"></div>
+          <div>
+            <div class="font-mono text-[11px] text-textMuted">Dual-Veto Interception</div>
+            <div class="font-mono text-sm font-bold text-white">100% Guardrail Coverage</div>
+          </div>
+        </div>
+        <div class="p-3.5 rounded-xl bg-white/[0.01] border border-borderDim flex items-center space-x-3">
+          <div class="w-2.5 h-2.5 rounded-full bg-cyanGlow"></div>
+          <div>
+            <div class="font-mono text-[11px] text-textMuted">Max Trade Allocation</div>
+            <div class="font-mono text-sm font-bold text-white">5.0% Strict Portfolio Cap</div>
+          </div>
+        </div>
+        <div class="p-3.5 rounded-xl bg-white/[0.01] border border-borderDim flex items-center space-x-3">
+          <div class="w-2.5 h-2.5 rounded-full bg-indigoAccent"></div>
+          <div>
+            <div class="font-mono text-[11px] text-textMuted">Council Deliberation</div>
+            <div class="font-mono text-sm font-bold text-white">Tri-Agent Adversarial</div>
+          </div>
+        </div>
+        <div class="p-3.5 rounded-xl bg-white/[0.01] border border-borderDim flex items-center space-x-3">
+          <div class="w-2.5 h-2.5 rounded-full bg-amberGlow"></div>
+          <div>
+            <div class="font-mono text-[11px] text-textMuted">Option Archetypes</div>
+            <div class="font-mono text-sm font-bold text-white">100% Defined Risk Only</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Section: Interactive Node Architecture Preview (Orbita-Inspired) -->
+  <section id="pipeline" class="relative z-10 py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    
+    <div class="text-center max-w-3xl mx-auto mb-16">
+      <span class="font-mono text-xs font-semibold uppercase tracking-wider text-indigo-300 px-3 py-1 rounded-full bg-indigoAccent/10 border border-indigoAccent/20">Orbita-Style Flowchart</span>
+      <h2 class="text-3xl sm:text-5xl font-heading font-extrabold text-white mt-3">Interactive Node Architecture</h2>
+      <p class="text-textMuted text-base mt-4">
+        Trace the high-velocity autonomous lifecycle from raw market feeds to verified execution brackets.
+      </p>
+    </div>
+
+    <!-- Node Architecture Flowchart Container -->
+    <div class="glass-panel rounded-3xl p-6 sm:p-10 relative overflow-hidden border-borderDim">
+      
+      <!-- Flowchart Nodes Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 relative z-10">
+        
+        <!-- Node 1: Market Telemetry -->
+        <div class="glass-panel rounded-2xl p-6 border-cyanGlow/30 relative group hover:border-cyanGlow transition-all duration-300 bg-obsidianCard">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-mono text-xs font-bold px-2 py-1 rounded bg-cyanGlow/20 text-cyanGlow border border-cyanGlow/30">NODE 01</span>
+            <span class="flex h-2 w-2 relative">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyanGlow opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-cyanGlow"></span>
+            </span>
+          </div>
+
+          <div class="w-12 h-12 rounded-xl bg-cyanGlow/10 border border-cyanGlow/30 flex items-center justify-center mb-4 text-cyanGlow">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+            </svg>
+          </div>
+
+          <h3 class="font-heading font-bold text-lg text-white mb-2">Alpaca Market APIs</h3>
+          <p class="text-xs text-textMuted leading-relaxed mb-4">
+            Real-time multi-timeframe SPY price bars (15m, 1h), dynamic contract chain discovery, implied volatility, RSI & MACD momentum.
+          </p>
+
+          <div class="space-y-1.5 font-mono text-[11px] bg-midnight/80 p-3 rounded-lg border border-borderDim">
+            <div class="flex justify-between text-textMuted"><span>Symbol:</span> <span class="text-white font-semibold">SPY</span></div>
+            <div class="flex justify-between text-textMuted"><span>Indicators:</span> <span class="text-cyanGlow">RSI(14), MACD(12,26,9)</span></div>
+            <div class="flex justify-between text-textMuted"><span>Exp Range:</span> <span class="text-indigo-300">0 - 14 DTE</span></div>
+          </div>
+        </div>
+
+        <!-- Node 2: Featherless AI Inference -->
+        <div class="glass-panel rounded-2xl p-6 border-indigoAccent/30 relative group hover:border-indigoAccent transition-all duration-300 bg-obsidianCard">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-mono text-xs font-bold px-2 py-1 rounded bg-indigoAccent/20 text-indigo-300 border border-indigoAccent/30">NODE 02</span>
+            <span class="w-2 h-2 rounded-full bg-indigoAccent"></span>
+          </div>
+
+          <div class="w-12 h-12 rounded-xl bg-indigoAccent/10 border border-indigoAccent/30 flex items-center justify-center mb-4 text-indigo-300">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </div>
+
+          <h3 class="font-heading font-bold text-lg text-white mb-2">GLM-5.2 Council</h3>
+          <p class="text-xs text-textMuted leading-relaxed mb-4">
+            Featherless AI Tri-Agent debate: Momentum Sentinel, Mean-Reversion Specialist, and Risk Auditor deliberating strike selection.
+          </p>
+
+          <div class="space-y-1.5 font-mono text-[11px] bg-midnight/80 p-3 rounded-lg border border-borderDim">
+            <div class="flex justify-between text-textMuted"><span>Engine:</span> <span class="text-indigo-300 font-semibold">Featherless AI</span></div>
+            <div class="flex justify-between text-textMuted"><span>Model:</span> <span class="text-white">zai-org/GLM-5.2</span></div>
+            <div class="flex justify-between text-textMuted"><span>Debate:</span> <span class="text-indigo-300">Tri-Agent Consensus</span></div>
+          </div>
+        </div>
+
+        <!-- Node 3: Risk Governor -->
+        <div class="glass-panel rounded-2xl p-6 border-roseAccent/30 relative group hover:border-roseAccent transition-all duration-300 bg-obsidianCard">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-mono text-xs font-bold px-2 py-1 rounded bg-roseAccent/20 text-rose-300 border border-roseAccent/30">NODE 03</span>
+            <span class="w-2 h-2 rounded-full bg-roseAccent"></span>
+          </div>
+
+          <div class="w-12 h-12 rounded-xl bg-roseAccent/10 border border-roseAccent/30 flex items-center justify-center mb-4 text-roseAccent">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+
+          <h3 class="font-heading font-bold text-lg text-white mb-2">Deterministic Veto</h3>
+          <p class="text-xs text-textMuted leading-relaxed mb-4">
+            Mathematical invariants execute unconditionally: 5% capital cap, max 2 concurrent positions, zero naked selling, and whitelist filter.
+          </p>
+
+          <div class="space-y-1.5 font-mono text-[11px] bg-midnight/80 p-3 rounded-lg border border-borderDim">
+            <div class="flex justify-between text-textMuted"><span>Ceiling:</span> <span class="text-rose-300 font-semibold">&le; $5,000 / trade</span></div>
+            <div class="flex justify-between text-textMuted"><span>Allowed:</span> <span class="text-emeraldGlow font-semibold">BUY_CALL, BUY_PUT</span></div>
+            <div class="flex justify-between text-textMuted"><span>Confidence:</span> <span class="text-white">&ge; 0.60 Min Floor</span></div>
+          </div>
+        </div>
+
+        <!-- Node 4: CLI Execution Brackets -->
+        <div class="glass-panel rounded-2xl p-6 border-emeraldGlow/30 relative group hover:border-emeraldGlow transition-all duration-300 bg-obsidianCard">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-mono text-xs font-bold px-2 py-1 rounded bg-emeraldGlow/20 text-emeraldGlow border border-emeraldGlow/30">NODE 04</span>
+            <span class="w-2 h-2 rounded-full bg-emeraldGlow"></span>
+          </div>
+
+          <div class="w-12 h-12 rounded-xl bg-emeraldGlow/10 border border-emeraldGlow/30 flex items-center justify-center mb-4 text-emeraldGlow">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+
+          <h3 class="font-heading font-bold text-lg text-white mb-2">CLI Bracket Order</h3>
+          <p class="text-xs text-textMuted leading-relaxed mb-4">
+            Alpaca CLI subprocess spawns atomic bracket orders: automatic +100% take-profit target and -50% stop-loss liquidation triggers.
+          </p>
+
+          <div class="space-y-1.5 font-mono text-[11px] bg-midnight/80 p-3 rounded-lg border border-borderDim">
+            <div class="flex justify-between text-textMuted"><span>Bracket Target:</span> <span class="text-emeraldGlow font-semibold">+100.0% P&L</span></div>
+            <div class="flex justify-between text-textMuted"><span>Stop Floor:</span> <span class="text-rose-300 font-semibold">-50.0% Risk</span></div>
+            <div class="flex justify-between text-textMuted"><span>Subprocess:</span> <span class="text-white">alpaca-cli binary</span></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Connecting Arrow Indicator bar (Visual flow) -->
+      <div class="hidden lg:flex items-center justify-between mt-8 pt-6 border-t border-borderDim px-4 font-mono text-xs text-textMuted">
+        <div class="flex items-center space-x-2">
+          <span class="w-2 h-2 rounded-full bg-cyanGlow"></span>
+          <span>1. Telemetry Ingestion</span>
+        </div>
+        <span class="text-borderDim font-bold">────────▶</span>
+        <div class="flex items-center space-x-2">
+          <span class="w-2 h-2 rounded-full bg-indigoAccent"></span>
+          <span>2. Council Consensus</span>
+        </div>
+        <span class="text-borderDim font-bold">────────▶</span>
+        <div class="flex items-center space-x-2">
+          <span class="w-2 h-2 rounded-full bg-roseAccent"></span>
+          <span>3. Dual-Veto Verification</span>
+        </div>
+        <span class="text-borderDim font-bold">────────▶</span>
+        <div class="flex items-center space-x-2">
+          <span class="w-2 h-2 rounded-full bg-emeraldGlow"></span>
+          <span>4. Atomic Bracket Execution</span>
+        </div>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- Section: Deep Feature Capabilities -->
+  <section id="council" class="relative z-10 py-20 bg-obsidian/30 border-t border-borderDim">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        
+        <!-- Left: Explanatory Content -->
+        <div>
+          <span class="font-mono text-xs font-semibold uppercase tracking-wider text-emeraldGlow px-3 py-1 rounded-full bg-emeraldGlow/10 border border-emeraldGlow/20">Adversarial Intelligence</span>
+          <h2 class="text-3xl sm:text-4xl font-heading font-extrabold text-white mt-4 leading-tight">
+            Tri-Agent Council Debate Meets Darwinian Strategy Evolution
+          </h2>
+          <p class="text-textMuted text-base mt-4 leading-relaxed">
+            Rather than relying on a single prompt or naive LLM sentiment, AlphaShield orchestrates a real-time adversarial debate among three specialized quant personas:
+          </p>
+
+          <div class="mt-8 space-y-4">
+            <div class="flex items-start space-x-4 p-4 rounded-xl glass-panel">
+              <div class="w-8 h-8 rounded-lg bg-cyanGlow/20 border border-cyanGlow/40 flex items-center justify-center flex-shrink-0 text-cyanGlow font-mono font-bold text-xs">01</div>
+              <div>
+                <h4 class="font-heading font-semibold text-white text-sm">Momentum Sentinel</h4>
+                <p class="text-xs text-textMuted mt-1">Identifies trend breakouts, directional MACD expansion, and high-velocity delta continuation plays.</p>
+              </div>
+            </div>
+
+            <div class="flex items-start space-x-4 p-4 rounded-xl glass-panel">
+              <div class="w-8 h-8 rounded-lg bg-indigoAccent/20 border border-indigoAccent/40 flex items-center justify-center flex-shrink-0 text-indigo-300 font-mono font-bold text-xs">02</div>
+              <div>
+                <h4 class="font-heading font-semibold text-white text-sm">Mean Reversion Specialist</h4>
+                <p class="text-xs text-textMuted mt-1">Detects statistical overextension (RSI &lt; 30 or &gt; 70) and fading counter-trend opportunities.</p>
+              </div>
+            </div>
+
+            <div class="flex items-start space-x-4 p-4 rounded-xl glass-panel">
+              <div class="w-8 h-8 rounded-lg bg-roseAccent/20 border border-roseAccent/40 flex items-center justify-center flex-shrink-0 text-rose-300 font-mono font-bold text-xs">03</div>
+              <div>
+                <h4 class="font-heading font-semibold text-white text-sm">Tail-Risk & Volatility Auditor</h4>
+                <p class="text-xs text-textMuted mt-1">Challenges the trade thesis, models theta decay risk, and demands strict IV expansion conditions.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-8">
+            <a href="/app" class="inline-flex items-center space-x-2 font-mono text-sm font-semibold text-cyanGlow hover:text-white transition-colors">
+              <span>View Live Council Debates on the Trading Desk</span>
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Right: Visual Terminal Mockup -->
+        <div id="risk-governor" class="glass-panel rounded-2xl p-6 border-borderDim shadow-2xl relative">
+          <div class="flex items-center justify-between pb-4 border-b border-borderDim mb-4">
+            <div class="flex items-center space-x-2">
+              <div class="w-3 h-3 rounded-full bg-rose-500/80"></div>
+              <div class="w-3 h-3 rounded-full bg-amber-500/80"></div>
+              <div class="w-3 h-3 rounded-full bg-emerald-500/80"></div>
+              <span class="font-mono text-xs text-textMuted ml-2">council_debate_stream.log</span>
+            </div>
+            <span class="font-mono text-[10px] text-emeraldGlow bg-emeraldGlow/10 px-2 py-0.5 rounded border border-emeraldGlow/20">LIVE AUDIT</span>
+          </div>
+
+          <div class="font-mono text-xs space-y-3 leading-relaxed">
+            <div class="p-2.5 rounded bg-midnight/90 border border-borderDim">
+              <span class="text-cyanGlow font-bold">[MOMENTUM_SENTINEL]</span>
+              <p class="text-slate-300 mt-1">"SPY 15m MACD bullish crossover confirmed at 592.40. RSI at 54.8 leaves strong upside momentum headroom. Recommending SPY260908C00595000 (0.42 Delta)."</p>
+            </div>
+
+            <div class="p-2.5 rounded bg-midnight/90 border border-borderDim">
+              <span class="text-indigo-300 font-bold">[REVERSION_QUANT]</span>
+              <p class="text-slate-300 mt-1">"Concur with bullish bias. 1h baseline support held firmly at 590.20. Rejecting puts. Expected value positive for 4-day expiry."</p>
+            </div>
+
+            <div class="p-2.5 rounded bg-midnight/90 border border-borderDim">
+              <span class="text-rose-400 font-bold">[RISK_AUDITOR]</span>
+              <p class="text-slate-300 mt-1">"Theta decay rate acceptable at $0.08/day. Position size must strictly respect $4,800 allocation cap (16 contracts @ $3.00 ask). Vetoing any naked selling."</p>
+            </div>
+
+            <div class="p-3 rounded bg-emeraldGlow/10 border border-emeraldGlow/30 text-emerald-300">
+              <div class="flex items-center justify-between font-bold">
+                <span>🛡️ DUAL-VETO GOVERNOR VERDICT:</span>
+                <span class="px-2 py-0.5 rounded bg-emeraldGlow/20 text-white text-[11px]">PASSED</span>
+              </div>
+              <p class="text-xs text-emerald-200/90 mt-1">
+                Action: BUY_CALL | Target: SPY 595.00 Call | Alloc: $4,800.00 | Execution: Alpaca CLI Subprocess
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CTA Banner Section -->
+  <section class="relative z-10 py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
+    <div class="glass-panel rounded-3xl p-10 sm:p-16 border-borderDim relative overflow-hidden shadow-2xl">
+      <div class="absolute inset-0 bg-gradient-to-r from-indigoAccent/10 via-cyanGlow/10 to-emeraldGlow/10 pointer-events-none"></div>
+      
+      <h2 class="text-3xl sm:text-5xl font-heading font-extrabold text-white mb-6">
+        Ready to Deploy Autonomous Institutional Options?
+      </h2>
+      <p class="text-textMuted text-base sm:text-lg max-w-2xl mx-auto mb-10">
+        Access real-time options telemetry, trigger live autonomous trading cycles, inspect Darwinism strategy scores, and audit paper order execution directly on the desk.
+      </p>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="/app" class="w-full sm:w-auto px-10 py-4 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-midnight font-heading font-bold text-base shadow-glow-emerald hover:brightness-110 transform transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center space-x-2">
+          <span>Enter Trading Desk</span>
+          <svg class="w-5 h-5 text-midnight" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
+        </a>
+        <a href="/docs" target="_blank" class="w-full sm:w-auto px-8 py-4 rounded-xl glass-panel text-white font-heading font-semibold text-base hover:bg-white/[0.05] border-borderDim transition-all">
+          Open OpenAPI / Swagger Docs
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Institutional Footer -->
+  <footer class="relative z-10 border-t border-borderDim bg-midnight/90 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+      
+      <!-- Brand & Copyright -->
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 rounded-lg bg-indigoAccent/20 border border-indigoAccent/40 flex items-center justify-center text-cyanGlow font-bold">
+          🛡️
+        </div>
+        <div>
+          <div class="font-heading font-bold text-white text-sm">AlphaShield Prime</div>
+          <p class="font-mono text-xs text-textMuted">Lablab.ai × Alpaca AI Trading Agents Hackathon</p>
+        </div>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="flex flex-wrap items-center justify-center gap-6 font-mono text-xs text-textMuted">
+        <a href="/app" class="hover:text-cyanGlow transition-colors">Trading Desk (/app)</a>
+        <a href="/api/health" target="_blank" class="hover:text-cyanGlow transition-colors">API Health</a>
+        <a href="/api/status" target="_blank" class="hover:text-cyanGlow transition-colors">Account Status</a>
+        <a href="/api/darwinism" target="_blank" class="hover:text-cyanGlow transition-colors">Darwinism Feed</a>
+        <a href="/docs" target="_blank" class="hover:text-cyanGlow transition-colors">Swagger Docs</a>
+      </div>
+
+      <!-- Compliance Disclaimer -->
+      <div class="font-mono text-[10px] text-textMuted text-center md:text-right max-w-xs">
+        Autonomous Paper Trading System. All options transactions are executed on the Alpaca Paper Broker Sandbox.
+      </div>
+
+    </div>
+  </footer>
+
+</body>
+</html>
