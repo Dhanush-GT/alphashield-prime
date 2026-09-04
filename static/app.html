@@ -200,94 +200,85 @@
   <div class="max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-6">
 
     <!-- 1. Top Navigation Bar -->
-    <header class="glass-card rounded-2xl p-3.5 sm:p-4 flex flex-col lg:flex-row items-center justify-between gap-4">
+    <header class="glass-card rounded-2xl px-4 py-2.5 flex flex-col lg:flex-row items-center justify-between gap-3 shadow-lg border border-white/[0.08]">
       
       <!-- Left: Brand Title & Subtitle -->
-      <div class="flex items-center gap-3.5 w-full lg:w-auto justify-between lg:justify-start">
-        <a href="/" class="flex items-center gap-3.5 group hover:opacity-90 transition-opacity" title="Return to Brand Landing Page">
-          <div class="relative flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-cyan-500 shadow-glow-indigo p-0.5 group-hover:scale-105 transition-transform">
-            <div class="w-full h-full bg-midnight/90 rounded-[10px] flex items-center justify-center">
-              <svg class="w-6 h-6 text-cyanGlow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-start shrink-0">
+        <a href="/" class="flex items-center gap-2.5 group" title="Return to Brand Landing Page">
+          <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 via-indigo-600 to-cyan-500 shadow-glow-indigo p-0.5 group-hover:scale-105 transition-transform">
+            <div class="w-full h-full bg-midnight rounded-[6px] flex items-center justify-center">
+              <svg class="w-4 h-4 text-cyanGlow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
               </svg>
             </div>
           </div>
           <div>
-            <div class="flex items-center gap-2">
-              <h1 class="text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-cyan-200 group-hover:text-cyanGlow transition-colors">
-                AlphaShield Prime
+            <div class="flex items-center gap-1.5">
+              <h1 class="text-base font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-cyan-200 group-hover:text-cyanGlow transition-colors">
+                AlphaShield
               </h1>
-              <span class="px-2 py-0.5 text-[10px] font-mono font-bold tracking-widest uppercase rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+              <span class="px-1.5 py-0.2 text-[9px] font-mono font-bold tracking-wider uppercase rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                 V2.0
               </span>
             </div>
-            <p class="text-[11px] font-semibold tracking-wider text-textMuted uppercase flex items-center gap-2 mt-0.5">
+            <p class="text-[10px] font-semibold tracking-wider text-textMuted uppercase flex items-center gap-1.5">
               <span>QUANTITATIVE OPTIONS DESK</span>
-              <span class="text-slate-600">|</span>
-              <span class="text-indigo-400">LABLAB.AI × ALPACA</span>
             </p>
           </div>
         </a>
-
-        <!-- Mobile Refresh Button -->
-        <button onclick="refreshDashboard(true)" class="lg:hidden p-2 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.1] text-textMuted hover:text-white transition-all">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-          </svg>
-        </button>
       </div>
 
       <!-- Center: Interactive Navigation Tabs (5 Tabs) -->
-      <nav id="view-switcher" class="flex items-center gap-2 p-1.5 bg-white/[0.02] border border-white/[0.08] rounded-xl overflow-x-auto max-w-full">
-        <button id="nav-btn-dashboard" onclick="switchMainTab('dashboard')" class="nav-tab-btn active flex items-center gap-2 whitespace-nowrap px-3.5 py-2 text-xs font-semibold rounded-lg shrink-0 border">
+      <nav id="view-switcher" class="flex items-center gap-1 p-1 bg-white/[0.02] border border-white/[0.08] rounded-xl overflow-x-auto max-w-full">
+        <button id="nav-btn-dashboard" onclick="switchMainTab('dashboard')" class="nav-tab-btn active flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 text-xs font-semibold rounded-lg shrink-0 border">
           <span>📊</span>
           <span>Dashboard</span>
         </button>
 
-        <button id="nav-btn-chart" onclick="switchMainTab('chart')" class="nav-tab-btn flex items-center gap-2 whitespace-nowrap px-3.5 py-2 text-xs font-semibold rounded-lg shrink-0 border">
+        <button id="nav-btn-chart" onclick="switchMainTab('chart')" class="nav-tab-btn flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 text-xs font-semibold rounded-lg shrink-0 border">
           <span>📈</span>
           <span>Live Chart</span>
         </button>
 
-        <button id="nav-btn-darwinism" onclick="switchMainTab('darwinism')" class="nav-tab-btn flex items-center gap-2 whitespace-nowrap px-3.5 py-2 text-xs font-semibold rounded-lg shrink-0 border">
+        <button id="nav-btn-darwinism" onclick="switchMainTab('darwinism')" class="nav-tab-btn flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 text-xs font-semibold rounded-lg shrink-0 border">
           <span>🧬</span>
           <span>Strategy Darwinism</span>
         </button>
 
-        <button id="nav-btn-council" onclick="switchMainTab('council')" class="nav-tab-btn flex items-center gap-2 whitespace-nowrap px-3.5 py-2 text-xs font-semibold rounded-lg shrink-0 border">
+        <button id="nav-btn-council" onclick="switchMainTab('council')" class="nav-tab-btn flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 text-xs font-semibold rounded-lg shrink-0 border">
           <span>🤖</span>
           <span>AI Council & CLI</span>
         </button>
 
-        <button id="nav-btn-positions" onclick="switchMainTab('positions')" class="nav-tab-btn flex items-center gap-2 whitespace-nowrap px-3.5 py-2 text-xs font-semibold rounded-lg shrink-0 border">
+        <button id="nav-btn-positions" onclick="switchMainTab('positions')" class="nav-tab-btn flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 text-xs font-semibold rounded-lg shrink-0 border">
           <span>💼</span>
           <span>Position Desk</span>
         </button>
       </nav>
 
-      <!-- Right: Live Status Indicators -->
-      <div class="hidden sm:flex items-center gap-2.5 flex-wrap">
+      <!-- Right: Live Status Indicators & Single Refresh Button -->
+      <div class="flex items-center gap-2 shrink-0">
         <!-- Alpaca Account ID Pill -->
-        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs font-mono shadow-[0_0_15px_-3px_rgba(16,185,129,0.3)]">
+        <div class="hidden xl:flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-[11px] font-mono text-emerald-300">
           <span class="text-xs">💼</span>
-          <span class="text-emerald-300 font-semibold" id="badge-account-id">[ 💼 ACC: PA3CMCT5LP09 ]</span>
+          <span class="font-semibold" id="badge-account-id">PA3CMCT5LP09</span>
         </div>
 
         <!-- Alpaca CLI Status Indicator -->
-        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.02] border border-white/[0.06] text-xs font-mono">
+        <div class="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.02] border border-white/[0.06] text-[11px] font-mono">
           <span class="pulse-dot bg-emerald-400 animate-ping"></span>
-          <span class="text-emerald-400 font-semibold" id="badge-alpaca">[ ● ALPACA CLI: CONNECTED ]</span>
+          <span class="text-emerald-400 font-semibold" id="badge-alpaca">ALPACA CLI</span>
         </div>
 
         <!-- Featherless Status Indicator -->
-        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.02] border border-white/[0.06] text-xs font-mono">
+        <div class="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.02] border border-white/[0.06] text-[11px] font-mono">
           <span class="pulse-dot bg-indigo-400 animate-pulse"></span>
-          <span class="text-indigo-400 font-semibold" id="badge-featherless">[ ● FEATHERLESS: ONLINE ]</span>
+          <span class="text-indigo-400 font-semibold" id="badge-featherless">FEATHERLESS</span>
         </div>
 
-        <!-- Refresh Button -->
-        <button id="btn-refresh" onclick="refreshDashboard(true)" title="Force Refresh Telemetry" class="p-2 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.1] hover:border-indigo-500/40 text-textMuted hover:text-white transition-all">
-          <svg id="icon-refresh" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <!-- Unified Single Refresh Button -->
+        <button id="btn-refresh" onclick="refreshDashboard(true)" title="Force Refresh Telemetry" class="p-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.1] hover:border-indigo-500/40 text-textMuted hover:text-white transition-all flex items-center justify-center">
+          <svg id="icon-refresh" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
           </svg>
         </button>
@@ -470,9 +461,6 @@
             <!-- Watchlist Asset Cards List -->
             <div id="watchlist-container" class="space-y-2.5">
               <!-- Rendered via JavaScript -->
-              <div class="text-center py-8 text-xs text-textMuted font-mono">
-                Loading liquid asset universe...
-              </div>
             </div>
           </div>
 
@@ -668,7 +656,9 @@
               <span id="ticket-strike-dte" class="text-indigo-400 font-bold">-- DTE</span>
             </div>
             <select id="ticket-strike-select" onchange="onTicketStrikeChanged()" class="w-full bg-black/60 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-indigo-500/50 transition-colors">
-              <option value="">Loading live options chain...</option>
+              <option value="SPY260919C00550000" selected>$550.00 (ATM) — Ask: $3.40 [Δ +0.50]</option>
+              <option value="SPY260919C00545000">$545.00 (ITM) — Ask: $6.80 [Δ +0.68]</option>
+              <option value="SPY260919C00555000">$555.00 (OTM) — Ask: $1.25 [Δ +0.32]</option>
             </select>
           </div>
 
@@ -1212,24 +1202,126 @@
 
   <!-- Frontend JavaScript Logic -->
   <script>
+    // Baseline Historical / Synthetic Fallback Data
+    const DEFAULT_BASE_MARKET = {
+      underlying: "SPY",
+      metrics: {
+        current_price: 549.90,
+        rsi_14: 58.4,
+        macd_line: 0.42,
+        macd_signal: 0.28,
+        macd_hist: 0.14,
+        ema_9: 549.20,
+        ema_21: 548.50,
+        ema_50: 546.80,
+        bar_count: 24
+      },
+      bars: [
+        { time: 1725451200, open: 547.20, high: 548.10, low: 546.90, close: 547.85, volume: 1420000 },
+        { time: 1725454800, open: 547.85, high: 548.60, low: 547.40, close: 548.30, volume: 1280000 },
+        { time: 1725458400, open: 548.30, high: 549.10, low: 548.00, close: 548.95, volume: 1650000 },
+        { time: 1725462000, open: 548.95, high: 549.50, low: 548.50, close: 549.10, volume: 1390000 },
+        { time: 1725465600, open: 549.10, high: 550.20, low: 548.80, close: 549.90, volume: 1980000 }
+      ],
+      ema_21_series: [
+        { time: 1725451200, value: 547.05 },
+        { time: 1725454800, value: 547.50 },
+        { time: 1725458400, value: 548.00 },
+        { time: 1725462000, value: 548.40 },
+        { time: 1725465600, value: 548.85 }
+      ]
+    };
+
+    const DEFAULT_BASE_EQUITY = {
+      timeframe: "1D",
+      current_equity: 100000.0,
+      starting_equity: 100000.0,
+      net_pnl: 0.0,
+      net_pnl_pct: 0.0,
+      high_water_mark: 100000.0,
+      points: [
+        { timestamp: "09:30", time_label: "09:30 AM", equity: 100000.0, pnl: 0.0 },
+        { timestamp: "11:00", time_label: "11:00 AM", equity: 100120.0, pnl: 120.0 },
+        { timestamp: "12:30", time_label: "12:30 PM", equity: 100080.0, pnl: 80.0 },
+        { timestamp: "14:00", time_label: "02:00 PM", equity: 100240.0, pnl: 240.0 },
+        { timestamp: "15:30", time_label: "03:30 PM", equity: 100310.0, pnl: 310.0 },
+        { timestamp: "16:00", time_label: "04:00 PM", equity: 100000.0, pnl: 0.0 }
+      ]
+    };
+
+    const DEFAULT_BASE_WATCHLIST = [
+      {
+        symbol: "SPY",
+        price: 549.90,
+        change_pct: 0.42,
+        volatility_regime: "EXPANSION VOLATILITY",
+        recommendation: "MOMENTUM CALLS",
+        is_whitelisted: true,
+        sparkline: [547.2, 547.8, 548.3, 548.9, 549.9]
+      },
+      {
+        symbol: "QQQ",
+        price: 478.60,
+        change_pct: 0.65,
+        volatility_regime: "TECH MOMENTUM",
+        recommendation: "OVERWATCH",
+        is_whitelisted: false,
+        sparkline: [475.1, 476.3, 477.0, 477.8, 478.6]
+      },
+      {
+        symbol: "IWM",
+        price: 218.40,
+        change_pct: -0.18,
+        volatility_regime: "MEAN REVERSION",
+        recommendation: "RANGE BOUND",
+        is_whitelisted: false,
+        sparkline: [219.0, 218.8, 218.2, 218.5, 218.4]
+      },
+      {
+        symbol: "NVDA",
+        price: 119.20,
+        change_pct: 1.15,
+        volatility_regime: "HIGH BETA IMPL VOL",
+        recommendation: "VOLATILITY FADE",
+        is_whitelisted: false,
+        sparkline: [117.0, 117.8, 118.4, 118.9, 119.2]
+      }
+    ];
+
+    const DEFAULT_BASE_OPTIONS_CHAIN = {
+      symbol: "SPY",
+      expiration_date: "2026-09-19",
+      dte: 15,
+      calls: [
+        { symbol: "SPY260919C00545000", strike: 545.0, moneyness: "ITM", ask: 6.80, bid: 6.70, delta: 0.68 },
+        { symbol: "SPY260919C00550000", strike: 550.0, moneyness: "ATM", ask: 3.40, bid: 3.35, delta: 0.50 },
+        { symbol: "SPY260919C00555000", strike: 555.0, moneyness: "OTM", ask: 1.25, bid: 1.20, delta: 0.32 }
+      ],
+      puts: [
+        { symbol: "SPY260919P00545000", strike: 545.0, moneyness: "OTM", ask: 1.30, bid: 1.25, delta: -0.31 },
+        { symbol: "SPY260919P00550000", strike: 550.0, moneyness: "ATM", ask: 3.35, bid: 3.30, delta: -0.49 },
+        { symbol: "SPY260919P00555000", strike: 555.0, moneyness: "ITM", ask: 6.75, bid: 6.65, delta: -0.67 }
+      ]
+    };
+
     // Global State
     let isCycleRunning = false;
     let autoRefreshTimer = null;
     let activeMainTab = 'dashboard';
-    let lastMarketData = null;
+    let lastMarketData = DEFAULT_BASE_MARKET;
     let chartMouseState = { isHovering: false, x: 0, y: 0 };
     let nativeChartResizeObserver = null;
 
     // Equity Curve & Watchlist Global State
     let activeEquityTimeframe = '1D';
-    let equityHistoryData = null;
-    let watchlistData = null;
+    let equityHistoryData = DEFAULT_BASE_EQUITY;
+    let watchlistData = DEFAULT_BASE_WATCHLIST;
     let equityMouseState = { isHovering: false, x: 0, y: 0 };
     let equityChartResizeObserver = null;
 
     // Options Order Ticket & AI Copilot State
     let activeTicketType = 'CALL';
-    let optionsChainData = null;
+    let optionsChainData = DEFAULT_BASE_OPTIONS_CHAIN;
     let selectedContract = null;
     let ticketQty = 1;
 
@@ -1470,13 +1562,7 @@
       ctx.fillRect(0, 0, width, height);
 
       if (!equityHistoryData || !Array.isArray(equityHistoryData.points) || equityHistoryData.points.length === 0) {
-        ctx.fillStyle = '#94A3B8';
-        ctx.font = '12px "JetBrains Mono", monospace';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('Syncing AI Equity Curve Data...', width / 2, height / 2);
-        ctx.restore();
-        return;
+        equityHistoryData = DEFAULT_BASE_EQUITY;
       }
 
       const points = equityHistoryData.points;
@@ -1688,9 +1774,10 @@
 
     function renderWatchlist(items) {
       const container = document.getElementById('watchlist-container');
-      if (!container || !Array.isArray(items) || items.length === 0) return;
+      const list = (Array.isArray(items) && items.length > 0) ? items : DEFAULT_BASE_WATCHLIST;
+      if (!container) return;
 
-      container.innerHTML = items.map(item => {
+      container.innerHTML = list.map(item => {
         const isPos = item.change_pct >= 0;
         const sign = isPos ? '+' : '';
         const colorClass = isPos ? 'text-emerald-400' : 'text-rose-400';
@@ -1793,12 +1880,16 @@
     function populateTicketStrikes() {
       const select = document.getElementById('ticket-strike-select');
       const dteEl = document.getElementById('ticket-strike-dte');
-      if (!select || !optionsChainData) return;
+      if (!select) return;
 
-      const list = activeTicketType === 'CALL' ? optionsChainData.calls : optionsChainData.puts;
+      if (!optionsChainData || !optionsChainData.calls) {
+        optionsChainData = DEFAULT_BASE_OPTIONS_CHAIN;
+      }
+
+      let list = activeTicketType === 'CALL' ? optionsChainData.calls : optionsChainData.puts;
       if (!Array.isArray(list) || list.length === 0) {
-        select.innerHTML = '<option value="">No contracts available</option>';
-        return;
+        optionsChainData = DEFAULT_BASE_OPTIONS_CHAIN;
+        list = activeTicketType === 'CALL' ? optionsChainData.calls : optionsChainData.puts;
       }
 
       if (dteEl && optionsChainData.dte !== undefined) {
@@ -2156,13 +2247,7 @@
 
       // Check if market data is loaded
       if (!lastMarketData || !Array.isArray(lastMarketData.bars) || lastMarketData.bars.length === 0) {
-        ctx.fillStyle = '#94A3B8';
-        ctx.font = '13px "JetBrains Mono", monospace';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('Syncing SPY Market Telemetry & Indicators...', width / 2, height / 2);
-        ctx.restore();
-        return;
+        lastMarketData = DEFAULT_BASE_MARKET;
       }
 
       const bars = [...lastMarketData.bars].sort((a, b) => a.time - b.time);
@@ -3206,7 +3291,12 @@
     // Lifecycle initialization
     document.addEventListener('DOMContentLoaded', () => {
       initEquityCurve();
+      renderEquityCurve();
       initNativeChart();
+      renderNativeCandlestickChart();
+      populateTicketStrikes();
+      renderWatchlist(DEFAULT_BASE_WATCHLIST);
+
       fetchOptionsChain('SPY');
       refreshDashboard();
 

@@ -142,29 +142,29 @@
   <div class="fixed bottom-0 left-0 right-0 h-[500px] radial-glow-bottom pointer-events-none z-0"></div>
 
   <!-- Header / Navigation Bar -->
-  <header class="sticky top-0 z-50 backdrop-blur-xl bg-midnight/80 border-b border-borderDim transition-all duration-300">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+  <header class="sticky top-0 z-50 backdrop-blur-xl bg-midnight/85 border-b border-borderDim transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       
       <!-- Brand Logo -->
       <a href="/" class="flex items-center space-x-3 group">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigoAccent via-violetAccent to-cyanGlow p-[1px] shadow-glow-indigo transition-transform duration-300 group-hover:scale-105">
-          <div class="w-full h-full bg-[#070B1B] rounded-xl flex items-center justify-center">
-            <svg class="w-5 h-5 text-cyanGlow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigoAccent via-violetAccent to-cyanGlow p-[1px] shadow-glow-indigo transition-transform duration-300 group-hover:scale-105">
+          <div class="w-full h-full bg-[#070B1B] rounded-[11px] flex items-center justify-center">
+            <svg class="w-4 h-4 text-cyanGlow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
           </div>
         </div>
         <div>
           <div class="flex items-center space-x-2">
-            <span class="font-heading font-extrabold text-lg tracking-tight text-white group-hover:text-cyanGlow transition-colors">AlphaShield</span>
-            <span class="font-mono text-xs font-semibold px-1.5 py-0.5 rounded bg-indigoAccent/20 text-indigo-300 border border-indigoAccent/30">PRIME</span>
+            <span class="font-heading font-extrabold text-base tracking-tight text-white group-hover:text-cyanGlow transition-colors">AlphaShield</span>
+            <span class="font-mono text-[10px] font-semibold px-1.5 py-0.2 rounded bg-indigoAccent/20 text-indigo-300 border border-indigoAccent/30">PRIME</span>
           </div>
-          <p class="font-mono text-[10px] text-textMuted tracking-wider uppercase">Autonomous Options Engine</p>
+          <p class="font-mono text-[9px] text-textMuted tracking-wider uppercase">Autonomous Options Engine</p>
         </div>
       </a>
 
       <!-- Desktop Navigation Links -->
-      <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-textMuted">
+      <nav class="hidden md:flex items-center space-x-7 text-xs font-medium text-textMuted">
         <a href="#pipeline" class="hover:text-white transition-colors">Architecture</a>
         <a href="#performance" class="hover:text-white transition-colors">Performance</a>
         <a href="#council" class="hover:text-white transition-colors">Tri-Agent Council</a>
@@ -173,27 +173,26 @@
       </nav>
 
       <!-- Right Header Actions: Status & Launch Desk CTA -->
-      <div class="flex items-center space-x-3 sm:space-x-4">
+      <div class="flex items-center space-x-3">
         <!-- Alpaca Account ID Pill -->
-        <div class="hidden lg:flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-emeraldGlow/10 border border-emeraldGlow/30 font-mono text-xs shadow-[0_0_15px_-3px_rgba(16,185,129,0.3)]">
+        <div class="hidden lg:flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-emeraldGlow/10 border border-emeraldGlow/30 font-mono text-[11px] text-emeraldGlow">
           <span class="text-xs">💼</span>
-          <span class="text-emeraldGlow font-semibold">[ 💼 ACC: PA3CMCT5LP09 ]</span>
+          <span class="font-semibold">PA3CMCT5LP09</span>
         </div>
 
-        <div class="hidden lg:flex items-center space-x-2 px-3 py-1.5 rounded-full bg-white/[0.02] border border-borderDim font-mono text-xs">
-          <span class="relative flex h-2 w-2">
+        <div class="hidden lg:flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-white/[0.02] border border-borderDim font-mono text-[11px]">
+          <span class="relative flex h-1.5 w-1.5">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emeraldGlow opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-2 w-2 bg-emeraldGlow"></span>
+            <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emeraldGlow"></span>
           </span>
-          <span class="text-textMuted">CLI Subprocess:</span>
-          <span class="text-emeraldGlow font-semibold">ONLINE</span>
+          <span class="text-emeraldGlow font-semibold">CLI ONLINE</span>
         </div>
 
-        <a href="/app" class="relative group overflow-hidden rounded-xl p-[1px] font-medium transition-all duration-300 hover:scale-105 active:scale-95 shadow-glow-emerald">
-          <div class="absolute inset-0 bg-gradient-to-r from-emeraldGlow via-cyanGlow to-indigoAccent transition-all duration-300 group-hover:opacity-100"></div>
-          <div class="relative px-5 py-2.5 rounded-[11px] bg-[#070C1E] flex items-center space-x-2 transition-all duration-300 group-hover:bg-[#070C1E]/80">
-            <span class="font-heading font-semibold text-sm text-white tracking-wide">Launch Trading Desk</span>
-            <svg class="w-4 h-4 text-emeraldGlow transform transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <a href="/app" class="relative group overflow-hidden rounded-lg p-[1px] font-medium transition-all duration-300 hover:scale-102 active:scale-95 shadow-sm">
+          <div class="absolute inset-0 bg-gradient-to-r from-emeraldGlow via-teal-500 to-cyanGlow transition-all duration-300 group-hover:opacity-100"></div>
+          <div class="relative px-3.5 py-1.5 rounded-[7px] bg-[#070C1E] flex items-center space-x-1.5 transition-all duration-300 group-hover:bg-[#070C1E]/80">
+            <span class="font-heading font-medium text-xs text-white tracking-wide">Launch Desk</span>
+            <svg class="w-3.5 h-3.5 text-emeraldGlow transform transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
           </div>
