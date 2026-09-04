@@ -103,6 +103,34 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
+
+    /* Mobile Responsiveness & Touch Target Optimization (<768px) */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2rem !important; /* 32px */
+        line-height: 1.15 !important;
+      }
+      h2 {
+        font-size: 1.5rem !important; /* 24px */
+        line-height: 1.25 !important;
+      }
+      p.text-base, p.text-xl {
+        font-size: 0.95rem !important;
+        line-height: 1.5 !important;
+      }
+      a[href="/app"], a[href="#pipeline"], button {
+        min-height: 44px;
+      }
+      .glass-panel {
+        padding: 1.25rem 1rem !important;
+      }
+      .overflow-x-auto {
+        -webkit-overflow-scrolling: touch;
+      }
+      table {
+        min-width: 540px;
+      }
+    }
   </style>
 </head>
 
