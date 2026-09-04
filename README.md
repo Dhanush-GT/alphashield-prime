@@ -1,3 +1,11 @@
+# ⚡ Live Production Endpoints (24/7 Cloud Hosted)
+- 🌐 **Institutional Options Desk:** [https://alphashield-prime-production.up.railway.app/app](https://alphashield-prime-production.up.railway.app/app)
+- 🏛️ **Public Landing Page:** [https://alphashield-prime-production.up.railway.app/](https://alphashield-prime-production.up.railway.app/)
+- 📊 **Interactive OpenAPI / Swagger Docs:** [https://alphashield-prime-production.up.railway.app/docs](https://alphashield-prime-production.up.railway.app/docs)
+- 🔑 **Verified Alpaca Paper Account ID:** `PA3CMCT5LP09`
+
+---
+
 # AlphaShield Prime: Institutional Autonomous Options Quant Desk
 **LabLab.ai × Alpaca AI Trading Agents Hackathon**  
 **Verified Alpaca Paper Account ID:** `PA3CMCT5LP09` | **Base Capital:** `$100,000.00 USD`
