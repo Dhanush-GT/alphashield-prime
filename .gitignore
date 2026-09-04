@@ -15,3 +15,8 @@ __pycache__/
 # Operating system
 .DS_Store
 Thumbs.db
+
+# Binaries & logs
+bin/
+*.log
+

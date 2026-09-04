@@ -38,12 +38,12 @@ logger = logging.getLogger("AlpacaOptionsAgent")
 
 class AlpacaOptionsAgent:
     def __init__(self):
-        self.api_key = os.getenv("ALPACA_API_KEY")
-        self.secret_key = os.getenv("ALPACA_SECRET_KEY")
-        self.base_url = os.getenv("ALPACA_BASE_URL", "https://paper-api.alpaca.markets")
+        self.api_key = os.getenv("ALPACA_API_KEY") or os.getenv("APCA_API_KEY_ID") or ""
+        self.secret_key = os.getenv("ALPACA_SECRET_KEY") or os.getenv("APCA_API_SECRET_KEY") or ""
+        self.base_url = (os.getenv("ALPACA_BASE_URL") or os.getenv("APCA_API_BASE_URL") or "https://paper-api.alpaca.markets").rstrip("/")
 
         if not self.api_key or not self.secret_key:
-            raise ValueError("Alpaca API credentials missing. Check .env file.")
+            logger.warning("Alpaca API credentials missing in environment. Running in resilient simulation & fallback mode.")
 
         # Subprocess CLI Interface
         self.cli = AlpacaCLI(

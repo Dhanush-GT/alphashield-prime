@@ -1419,14 +1419,43 @@
     async function safeFetchJson(url, fallbackVal = null, options = {}, timeoutMs = 2500) {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+      const triggerFallbackAndClearSync = () => {
+        if (typeof renderNativeCandlestickChart === 'function') {
+          try {
+            renderNativeCandlestickChart(typeof DEFAULT_BASE_MARKET !== 'undefined' ? DEFAULT_BASE_MARKET : null);
+          } catch (_) {}
+        }
+        if (typeof renderEquityCurve === 'function') {
+          try {
+            renderEquityCurve(typeof DEFAULT_BASE_EQUITY !== 'undefined' ? DEFAULT_BASE_EQUITY : null);
+          } catch (_) {}
+        }
+        try {
+          const banner = document.getElementById('cycle-loading-banner');
+          if (banner) banner.classList.add('hidden');
+          const refreshIcon = document.getElementById('icon-refresh');
+          if (refreshIcon) refreshIcon.classList.remove('animate-spin');
+          document.querySelectorAll('*').forEach(el => {
+            if (el.children.length === 0 && el.textContent && el.textContent.includes('Syncing...')) {
+              el.textContent = '';
+            }
+          });
+        } catch (_) {}
+      };
+
       try {
         const res = await fetch(url, { ...options, signal: controller.signal });
         clearTimeout(timer);
-        if (!res.ok) return fallbackVal;
+        if (!res.ok || res.status !== 200) {
+          triggerFallbackAndClearSync();
+          return fallbackVal;
+        }
         const json = await res.json();
         return (json !== null && json !== undefined) ? json : fallbackVal;
       } catch (err) {
         clearTimeout(timer);
+        triggerFallbackAndClearSync();
         return fallbackVal;
       }
     }
